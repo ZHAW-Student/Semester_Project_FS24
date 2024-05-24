@@ -10,14 +10,15 @@ quarto render Readme.md --to pdf
 **Patterns & Trends in Environmental Data / Computational Movement
 Analysis Geo 880**
 
-| Semester:      | FS23                                     |
+| Semester:      | FS24                                     |
 |:---------------|:---------------------------------------- |
 | **Data:**      | What type of data are you focussing on?  |
 | **Title:**     | The title of your project                |
-| **Student 1:** | Name of Student 1                        |
-| **Student 2:** | Name of Student 2                        |
+| **Student 1:** | Saskia Gianola                           |
+| **Student 2:** | Sarah Wirth                              |
 
 ## Abstract 
+Sinuosity
 <!-- (50-60 words) -->
 
 ## Research Questions
