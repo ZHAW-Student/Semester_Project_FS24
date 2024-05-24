@@ -18,20 +18,21 @@ Analysis Geo 880**
 | **Student 2:** | Sarah Wirth                              |
 
 ## Abstract 
-Sinuosity
-<!-- (50-60 words) -->
+Based on movement data we want to derive the purpose of the movement. Using the attributes sinuosity, speed and number of stops we want to find out whether an activity belongs to commuting path, is recreational or belongs to running an errand for example grocery shopping. 
 
 ## Research Questions
-<!-- (50-60 words) -->
+Is it possible to derive the type of activity from movement data considering the attributes sinuosity, speed and visited locations?
 
 ## Results / products
-<!-- What do you expect, anticipate? -->
+We expect to be able to distinguish between different types of activity data. The trajectories are expected to differ regarding sinuosity, speed and number of stops. 
 
 ## Data
-<!-- What data will you use? Will you require additional context data? Where do you get this data from? Do you already have all the data? -->
+We use the activity data from Saskia and if we would be able to get additional walking data from other students that would be ideal. 
 
 ## Analytical concepts
-<!-- Which analytical concepts will you use? What conceptual movement spaces and respective modelling approaches of trajectories will you be using? What additional spatial analysis methods will you be using? -->
+Similarity measures
+Raw characteristics such as sinuosity, speed and number of stops.
+Visual comparison with timecubes
 
 ## R concepts
 <!-- Which R concepts, functions, packages will you mainly use. What additional spatial analysis methods will you be using? -->
