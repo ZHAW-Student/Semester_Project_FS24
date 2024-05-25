@@ -5,20 +5,30 @@ library("leaflet")
 library("sf")
 library("tmap")
 library("ggplot2")
+library("tidyverse")
 
 # read activities
-act1 <- htmlTreeParse(file = "activities/11034695746.gpx", useInternalNodes = TRUE)
-act2 <- htmlTreeParse(file = "activities/11034777563.gpx", useInternalNodes = TRUE)
-act3 <- htmlTreeParse(file = "activities/11040701159.gpx", useInternalNodes = TRUE)
-act4 <- htmlTreeParse(file = "activities/11041610041.gpx", useInternalNodes = TRUE)
-act5 <- htmlTreeParse(file = "activities/11090207888.gpx", useInternalNodes = TRUE)
-act6 <- htmlTreeParse(file = "activities/11116939487.gpx", useInternalNodes = TRUE)
-act7 <- htmlTreeParse(file = "activities/11126064758.gpx", useInternalNodes = TRUE)
-act8 <- htmlTreeParse(file = "activities/11134866767.gpx", useInternalNodes = TRUE)
-act9 <- htmlTreeParse(file = "activities/11163006442.gpx", useInternalNodes = TRUE)
-act10 <- htmlTreeParse(file = "activities/11163561276.gpx", useInternalNodes = TRUE)
-act11 <- htmlTreeParse(file = "activities/11180057399.gpx", useInternalNodes = TRUE)
-act12 <- htmlTreeParse(file = "activities/11238978781.gpx", useInternalNodes = TRUE)
+myfiles <- list.files("activities/.", pattern = "*.gpx")
+
+for (i in 1:12){
+  filename <- paste0("activity", i)
+  wd <- paste0("activities/", myfiles[i])
+  assign(filename, htmlTreeParse(file = wd, useInternalNodes = TRUE))
+}
+  
+# act1 <- htmlTreeParse(file = "activities/11034695746.gpx", useInternalNodes = TRUE)
+# act2 <- htmlTreeParse(file = "activities/11034777563.gpx", useInternalNodes = TRUE)
+# act3 <- htmlTreeParse(file = "activities/11040701159.gpx", useInternalNodes = TRUE)
+# act4 <- htmlTreeParse(file = "activities/11041610041.gpx", useInternalNodes = TRUE)
+# act5 <- htmlTreeParse(file = "activities/11090207888.gpx", useInternalNodes = TRUE)
+# act6 <- htmlTreeParse(file = "activities/11116939487.gpx", useInternalNodes = TRUE)
+# act7 <- htmlTreeParse(file = "activities/11126064758.gpx", useInternalNodes = TRUE)
+# act8 <- htmlTreeParse(file = "activities/11134866767.gpx", useInternalNodes = TRUE)
+# act9 <- htmlTreeParse(file = "activities/11163006442.gpx", useInternalNodes = TRUE)
+# act10 <- htmlTreeParse(file = "activities/11163561276.gpx", useInternalNodes = TRUE)
+# act11 <- htmlTreeParse(file = "activities/11180057399.gpx", useInternalNodes = TRUE)
+# act12 <- htmlTreeParse(file = "activities/11238978781.gpx", useInternalNodes = TRUE)
+
 
 # function to parse activities and write into data frame
 built_df <- function(activity) {
@@ -37,7 +47,7 @@ built_df <- function(activity) {
 }
 
 # run function with each activity
-act1_df <- built_df(act1)
+act1_df <- built_df(activity1)
 act2_df <- built_df(act2)
 act3_df <- built_df(act3)
 act4_df <- built_df(act4)
