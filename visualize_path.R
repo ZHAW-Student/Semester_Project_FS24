@@ -11,7 +11,7 @@ library("tidyverse")
 myfiles <- list.files("activities/.", pattern = "*.gpx")
 
 for (i in 1:12){
-  filename <- paste0("activity", i)
+  filename <- paste0("act", i)
   wd <- paste0("activities/", myfiles[i])
   assign(filename, htmlTreeParse(file = wd, useInternalNodes = TRUE))
 }
@@ -47,7 +47,7 @@ built_df <- function(activity) {
 }
 
 # run function with each activity
-act1_df <- built_df(activity1)
+act1_df <- built_df(act1)
 act2_df <- built_df(act2)
 act3_df <- built_df(act3)
 act4_df <- built_df(act4)
