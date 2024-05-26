@@ -1,12 +1,4 @@
 # Proposal for Semester Project
-
-
-<!-- 
-Please render a pdf version of this Markdown document with the command below (in your bash terminal) and push this file to Github
-
-quarto render Readme.md --to pdf
--->
-
 **Patterns & Trends in Environmental Data / Computational Movement
 Analysis Geo 880**
 
