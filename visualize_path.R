@@ -66,7 +66,7 @@ act10_sf <- df_to_sf(act10_df)
 act11_sf <- df_to_sf(act11_df)
 act12_sf <- df_to_sf(act12_df)
 
-# DF zusammenfügen und exportieren
+# DF zusammenfügen, crs ändern und exportieren
 
 # Attributierung im GIS, dann Import und weiterverarbeitung
 
