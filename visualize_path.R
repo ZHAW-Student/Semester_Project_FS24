@@ -16,19 +16,6 @@ for (i in 1:12){
   assign(filename, htmlTreeParse(file = wd, useInternalNodes = TRUE))
 }
   
-# act1 <- htmlTreeParse(file = "activities/11034695746.gpx", useInternalNodes = TRUE)
-# act2 <- htmlTreeParse(file = "activities/11034777563.gpx", useInternalNodes = TRUE)
-# act3 <- htmlTreeParse(file = "activities/11040701159.gpx", useInternalNodes = TRUE)
-# act4 <- htmlTreeParse(file = "activities/11041610041.gpx", useInternalNodes = TRUE)
-# act5 <- htmlTreeParse(file = "activities/11090207888.gpx", useInternalNodes = TRUE)
-# act6 <- htmlTreeParse(file = "activities/11116939487.gpx", useInternalNodes = TRUE)
-# act7 <- htmlTreeParse(file = "activities/11126064758.gpx", useInternalNodes = TRUE)
-# act8 <- htmlTreeParse(file = "activities/11134866767.gpx", useInternalNodes = TRUE)
-# act9 <- htmlTreeParse(file = "activities/11163006442.gpx", useInternalNodes = TRUE)
-# act10 <- htmlTreeParse(file = "activities/11163561276.gpx", useInternalNodes = TRUE)
-# act11 <- htmlTreeParse(file = "activities/11180057399.gpx", useInternalNodes = TRUE)
-# act12 <- htmlTreeParse(file = "activities/11238978781.gpx", useInternalNodes = TRUE)
-
 
 # function to parse activities and write into data frame
 built_df <- function(activity) {
@@ -79,6 +66,9 @@ act10_sf <- df_to_sf(act10_df)
 act11_sf <- df_to_sf(act11_df)
 act12_sf <- df_to_sf(act12_df)
 
+# DF zusammenfügen und exportieren
+
+# Attributierung im GIS, dann Import und weiterverarbeitung
 
 # plot
 leaflet() |> 
