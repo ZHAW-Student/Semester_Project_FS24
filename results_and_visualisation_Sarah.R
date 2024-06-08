@@ -19,19 +19,13 @@ gemeindeselection <-gemeindegrenzen |> filter(name %in% c("Andelfingen","Bubendo
 
 rm(gemeindegrenzen)#free up memory
 
-
+###Preprocessing for clipping layers ----
 st_layers("SWISSTLM3D_2024_LV95_LN02.gpkg")#see all contents
 
 gebaeude <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bauten_gebaeude_footprint")
 gebaeude_selection<-st_intersection(gebaeude,gemeindeselection)
 rm(gebaeude)
-st_write(bodenbedeckung_selection, dsn="CAMA_data/bodenbedeckung_selection.gpkg")
-
-
-strassen <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bauten_strassen_strasse")
-strassen_selection<-st_intersection(strassen,gemeindeselection)
-rm(strassen)
-
+st_write(gebaeude_selection, dsn="CAMA_data/gebaeude_selection.gpkg")
 
 bodenbedeckung <- read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bb_bodenbedeckung")
 bodenbedeckung_selection<-st_intersection(bodenbedeckung,gemeindeselection)
@@ -44,13 +38,22 @@ nutzungsareal_selection<-st_intersection(nutzungsareal,gemeindeselection)
 rm(nutzungsareal)
 st_write(nutzungsareal_selection, dsn="CAMA_data/nutzungsareal_selection.gpkg")
 
+strassen <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bauten_strassen_strasse")
+strassen_selection<-st_intersection(strassen,gemeindeselection)
+rm(strassen)
+st_write(strassen_selection, dsn="CAMA_data/strassen_selection.gpkg")
+
+
+a<-read_sf("CAMA_data/bodenbedeckung_selection.gpkg")
+rm(a)
+
+tmap_mode("view")
 
 tm_shape(gemeindeselection)+
   tm_polygons(col="name")+
     tm_shape(a)+
-    tm_polygons(col="OBJEKTART")+
-  tm_shape(b)+
-  tm_polygons(col="OBJEKTART")
+    tm_polygons(col="objektart")
+
 
 ###merge polygons---
 
