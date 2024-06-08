@@ -5,21 +5,20 @@ library("dplyr")
 library("tmap")
 library("ggplot2")
 library("terra")
+library("caret")
+library("yardstick")
+#Cama workflow ----
 
-##Cama workflow ----
-
-##read CAMA data and remove oversized files immediately----
-###prepare clip data----
+##Prepare clip data----
 gemeindegrenzen <- read_sf("swissBOUNDARIES3D_1_5_LV95_LN02.gpkg","tlm_hoheitsgebiet")
 
 gemeindeselection <-gemeindegrenzen |> filter(name %in% c("Andelfingen","Bubendorf","Freienbach","Kleinandelfingen","Liestal" ,"Neuhausen am Rheinfall","Rapperswil-Jona","Regensdorf","Rüti","St. Moritz","S-chanf","Wädenswil","Winterthur","Zuoz"))
 
-#tm_shape(gemeindeselection)+
-  #tm_polygons(col="name")
-
+tm_shape(gemeindeselection)+
+  tm_polygons(col="name")
 rm(gemeindegrenzen)#free up memory
 
-###Preprocessing for clipping layers ----
+##Reading, clipping and exporting clipped layers----
 st_layers("SWISSTLM3D_2024_LV95_LN02.gpkg")#see all contents
 
 gebaeude <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bauten_gebaeude_footprint")
@@ -38,32 +37,39 @@ nutzungsareal_selection<-st_intersection(nutzungsareal,gemeindeselection)
 rm(nutzungsareal)
 st_write(nutzungsareal_selection, dsn="CAMA_data/nutzungsareal_selection.gpkg")
 
-strassen <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bauten_strassen_strasse")
+strassen <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_strassen_strasse")
 strassen_selection<-st_intersection(strassen,gemeindeselection)
 rm(strassen)
 st_write(strassen_selection, dsn="CAMA_data/strassen_selection.gpkg")
 
+##re-read exported data for other days ----
+gebaeude_clip<-read_sf("CAMA_data/gebaeude_selection.gpkg")
 
-a<-read_sf("CAMA_data/bodenbedeckung_selection.gpkg")
-rm(a)
+bodenbedeckung_clip<-read_sf("CAMA_data/bodenbedeckung_selection.gpkg")
 
-tmap_mode("view")
+nutzungsareal_clip<-read_sf("CAMA_data/nutzungsareal_selection.gpkg")
 
-tm_shape(gemeindeselection)+
-  tm_polygons(col="name")+
-    tm_shape(a)+
-    tm_polygons(col="objektart")
+strassen_clip<-read_sf("CAMA_data/strassen_selection.gpkg")
 
-
-###merge polygons---
-
-merge <-st_union(bodenbedeckung,nutzungsareal, is_coverage = TRUE)#
+##Merge polygons---
+merge <-st_union(bodenbedeckung_clip,nutzungsareal_clip, is_coverage = TRUE)#
 
 #find whether point is within a distance
-st_is_within_distance()
+st_is_within_distance(points,camalayer,distance=2)
 
-### create number if point lies within boundaries of polygon ----
+## create number if point lies within boundaries of object ----
 
 ##Visualize confusion matrices ----
+#source:https://stackoverflow.com/questions/23891140/r-how-to-visualize-confusion-matrix-using-the-caret-package
 
-##visualize classified path ----
+testmat<-matrix(c(15,44,23,32),nrow=2,dimnames = list(c("0","1"), c("0","1")))
+
+confus <-conf_mat(testmat)
+
+autoplot(confus, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
+
+##Visualize classified path ----
+
