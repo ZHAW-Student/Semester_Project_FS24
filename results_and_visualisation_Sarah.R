@@ -13,22 +13,46 @@ library("lubridate")
 
 #what i need: buildings, roads, greenspace, versiegelte flächen
 
-st_layers("SWISSTLM3D_2024_LV95_LN02.gpkg")#see all contents
 
-nutzungsareal <- read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_areale_nutzungsareal")# read layers
-bodenbedeckung <- read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bb_bodenbedeckung")# read layers
+st_layers("Vektor_25_Waedi/226/SMV25_CHLV95LN02.gpkg")#see all contents
 
-unique(nutzungsareal$objektart)
-unique(bodenbedeckung$objektart)
+
+bodenbedeckung <- read_sf("Vektor_25_Waedi/226/SMV25_CHLV95LN02.gpkg","T65_DKM25_BODENBEDECKUNG")
+
+nutzungsareal <-read_sf("Vektor_25_Waedi/226/SMV25_CHLV95LN02.gpkg","T64_DKM25_NUTZUNGSAREAL")
 
 tmap_mode("view")
-tm_shape(nutzungsareal)+
-  tm_polygons(col="objektart")
-
 tm_shape(bodenbedeckung)+
-  tm_polygons(col="objektart")
+  tm_polygons(col="OBJEKTART")+
+  tm_shape(nutzungsareal)+
+  tm_polygons(col="OBJEKTART")
 
-### make hulls around areas where data was generated----
+
+
+##clip data----
+st_layers("swissBOUNDARIES3D_1_5_LV95_LN02.gpkg")#see all contents
+
+gemeindegrenzen <- read_sf("swissBOUNDARIES3D_1_5_LV95_LN02.gpkg","tlm_hoheitsgebiet")
+tm_shape(gemeindegrenzen)+
+  tm_polygons(col="name")
+
+gemeindeselection <-gemeindegrenzen$name[(gemeindegrenzen$name %in% c("Andelfingen","Bubendorf","Kleinandelfingen","Liestal" ,"Neuhausen","Pfäffikon","Regensdorf","Rüti","St. Moritz","S-Chanf","Wädenswil","Zuoz"))]
+
+a<-st_intersection(bodenbedeckung,)
+
+tm_shape(borders)+
+  tm_polygons(col="ort")+
+    tm_shape(a)+
+    tm_polygons(col="OBJEKTART")
+
+###merge polygons---
+
+#merge <-st_union(bodenbedeckung,nutzungsareal, is_coverage = TRUE)#
+
+#find whether point is within a distance
+st_is_within_distance()
+
+### create number if point lies within boundaries of polygon ----
 
 ##Visualize confusion matrices ----
 
