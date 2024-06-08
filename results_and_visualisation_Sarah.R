@@ -5,38 +5,45 @@ library("dplyr")
 library("tmap")
 library("ggplot2")
 library("terra")
-library("lubridate")
 
 ##Cama workflow ----
 
-###read CAMA data ----
-
-#what i need: buildings, roads, greenspace, versiegelte flächen
-st_layers("Vektor_25_Waedi/226/SMV25_CHLV95LN02.gpkg")#see all contents
-
-###
-bodenbedeckung <- read_sf("Vektor_25_Waedi/226/SMV25_CHLV95LN02.gpkg","T65_DKM25_BODENBEDECKUNG")
-
-nutzungsareal <-read_sf("Vektor_25_Waedi/226/SMV25_CHLV95LN02.gpkg","T64_DKM25_NUTZUNGSAREAL")
-
-tmap_mode("view")
-tm_shape(bodenbedeckung)+
-  tm_polygons(col="OBJEKTART")+
-  tm_shape(nutzungsareal)+
-  tm_polygons(col="OBJEKTART")
-
-##clip data----
+##read CAMA data and remove oversized files immediately----
+###prepare clip data----
 gemeindegrenzen <- read_sf("swissBOUNDARIES3D_1_5_LV95_LN02.gpkg","tlm_hoheitsgebiet")
 
 gemeindeselection <-gemeindegrenzen |> filter(name %in% c("Andelfingen","Bubendorf","Freienbach","Kleinandelfingen","Liestal" ,"Neuhausen am Rheinfall","Rapperswil-Jona","Regensdorf","Rüti","St. Moritz","S-chanf","Wädenswil","Winterthur","Zuoz"))
 
-tm_shape(gemeindeselection)+
-  tm_polygons(col="name")
+#tm_shape(gemeindeselection)+
+  #tm_polygons(col="name")
 
 rm(gemeindegrenzen)#free up memory
 
-a<-st_intersection(bodenbedeckung,gemeindeselection)
-b<-st_intersection(nutzungsareal,gemeindeselection)
+
+st_layers("SWISSTLM3D_2024_LV95_LN02.gpkg")#see all contents
+
+gebaeude <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bauten_gebaeude_footprint")
+gebaeude_selection<-st_intersection(gebaeude,gemeindeselection)
+rm(gebaeude)
+st_write(bodenbedeckung_selection, dsn="CAMA_data/bodenbedeckung_selection.gpkg")
+
+
+strassen <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bauten_strassen_strasse")
+strassen_selection<-st_intersection(strassen,gemeindeselection)
+rm(strassen)
+
+
+bodenbedeckung <- read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bb_bodenbedeckung")
+bodenbedeckung_selection<-st_intersection(bodenbedeckung,gemeindeselection)
+rm(bodenbedeckung)
+gc()#free up memory
+st_write(bodenbedeckung_selection, dsn="CAMA_data/bodenbedeckung_selection.gpkg")
+
+nutzungsareal <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_areale_nutzungsareal")
+nutzungsareal_selection<-st_intersection(nutzungsareal,gemeindeselection)
+rm(nutzungsareal)
+st_write(nutzungsareal_selection, dsn="CAMA_data/nutzungsareal_selection.gpkg")
+
 
 tm_shape(gemeindeselection)+
   tm_polygons(col="name")+
@@ -47,7 +54,7 @@ tm_shape(gemeindeselection)+
 
 ###merge polygons---
 
-#merge <-st_union(bodenbedeckung,nutzungsareal, is_coverage = TRUE)#
+merge <-st_union(bodenbedeckung,nutzungsareal, is_coverage = TRUE)#
 
 #find whether point is within a distance
 st_is_within_distance()
