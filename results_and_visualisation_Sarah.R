@@ -5,30 +5,64 @@ library("dplyr")
 library("tmap")
 library("ggplot2")
 library("terra")
-library("lubridate")
 
 ##Cama workflow ----
 
-###read CAMA data ----
+##read CAMA data and remove oversized files immediately----
+###prepare clip data----
+gemeindegrenzen <- read_sf("swissBOUNDARIES3D_1_5_LV95_LN02.gpkg","tlm_hoheitsgebiet")
 
-#what i need: buildings, roads, greenspace, versiegelte flächen
+gemeindeselection <-gemeindegrenzen |> filter(name %in% c("Andelfingen","Bubendorf","Freienbach","Kleinandelfingen","Liestal" ,"Neuhausen am Rheinfall","Rapperswil-Jona","Regensdorf","Rüti","St. Moritz","S-chanf","Wädenswil","Winterthur","Zuoz"))
 
+#tm_shape(gemeindeselection)+
+  #tm_polygons(col="name")
+
+rm(gemeindegrenzen)#free up memory
+
+###Preprocessing for clipping layers ----
 st_layers("SWISSTLM3D_2024_LV95_LN02.gpkg")#see all contents
 
-nutzungsareal <- read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_areale_nutzungsareal")# read layers
-bodenbedeckung <- read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bb_bodenbedeckung")# read layers
+gebaeude <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bauten_gebaeude_footprint")
+gebaeude_selection<-st_intersection(gebaeude,gemeindeselection)
+rm(gebaeude)
+st_write(gebaeude_selection, dsn="CAMA_data/gebaeude_selection.gpkg")
 
-unique(nutzungsareal$objektart)
-unique(bodenbedeckung$objektart)
+bodenbedeckung <- read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bb_bodenbedeckung")
+bodenbedeckung_selection<-st_intersection(bodenbedeckung,gemeindeselection)
+rm(bodenbedeckung)
+gc()#free up memory
+st_write(bodenbedeckung_selection, dsn="CAMA_data/bodenbedeckung_selection.gpkg")
+
+nutzungsareal <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_areale_nutzungsareal")
+nutzungsareal_selection<-st_intersection(nutzungsareal,gemeindeselection)
+rm(nutzungsareal)
+st_write(nutzungsareal_selection, dsn="CAMA_data/nutzungsareal_selection.gpkg")
+
+strassen <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bauten_strassen_strasse")
+strassen_selection<-st_intersection(strassen,gemeindeselection)
+rm(strassen)
+st_write(strassen_selection, dsn="CAMA_data/strassen_selection.gpkg")
+
+
+a<-read_sf("CAMA_data/bodenbedeckung_selection.gpkg")
+rm(a)
 
 tmap_mode("view")
-tm_shape(nutzungsareal)+
-  tm_polygons(col="objektart")
 
-tm_shape(bodenbedeckung)+
-  tm_polygons(col="objektart")
+tm_shape(gemeindeselection)+
+  tm_polygons(col="name")+
+    tm_shape(a)+
+    tm_polygons(col="objektart")
 
-### make hulls around areas where data was generated----
+
+###merge polygons---
+
+merge <-st_union(bodenbedeckung,nutzungsareal, is_coverage = TRUE)#
+
+#find whether point is within a distance
+st_is_within_distance()
+
+### create number if point lies within boundaries of polygon ----
 
 ##Visualize confusion matrices ----
 
