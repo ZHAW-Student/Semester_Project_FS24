@@ -12,11 +12,9 @@ library("lubridate")
 ###read CAMA data ----
 
 #what i need: buildings, roads, greenspace, versiegelte flächen
-
-
 st_layers("Vektor_25_Waedi/226/SMV25_CHLV95LN02.gpkg")#see all contents
 
-
+###
 bodenbedeckung <- read_sf("Vektor_25_Waedi/226/SMV25_CHLV95LN02.gpkg","T65_DKM25_BODENBEDECKUNG")
 
 nutzungsareal <-read_sf("Vektor_25_Waedi/226/SMV25_CHLV95LN02.gpkg","T64_DKM25_NUTZUNGSAREAL")
@@ -27,23 +25,25 @@ tm_shape(bodenbedeckung)+
   tm_shape(nutzungsareal)+
   tm_polygons(col="OBJEKTART")
 
-
-
 ##clip data----
-st_layers("swissBOUNDARIES3D_1_5_LV95_LN02.gpkg")#see all contents
-
 gemeindegrenzen <- read_sf("swissBOUNDARIES3D_1_5_LV95_LN02.gpkg","tlm_hoheitsgebiet")
-tm_shape(gemeindegrenzen)+
+
+gemeindeselection <-gemeindegrenzen |> filter(name %in% c("Andelfingen","Bubendorf","Freienbach","Kleinandelfingen","Liestal" ,"Neuhausen am Rheinfall","Rapperswil-Jona","Regensdorf","Rüti","St. Moritz","S-chanf","Wädenswil","Winterthur","Zuoz"))
+
+tm_shape(gemeindeselection)+
   tm_polygons(col="name")
 
-gemeindeselection <-gemeindegrenzen$name[(gemeindegrenzen$name %in% c("Andelfingen","Bubendorf","Kleinandelfingen","Liestal" ,"Neuhausen","Pfäffikon","Regensdorf","Rüti","St. Moritz","S-Chanf","Wädenswil","Zuoz"))]
+rm(gemeindegrenzen)#free up memory
 
-a<-st_intersection(bodenbedeckung,)
+a<-st_intersection(bodenbedeckung,gemeindeselection)
+b<-st_intersection(nutzungsareal,gemeindeselection)
 
-tm_shape(borders)+
-  tm_polygons(col="ort")+
+tm_shape(gemeindeselection)+
+  tm_polygons(col="name")+
     tm_shape(a)+
-    tm_polygons(col="OBJEKTART")
+    tm_polygons(col="OBJEKTART")+
+  tm_shape(b)+
+  tm_polygons(col="OBJEKTART")
 
 ###merge polygons---
 
