@@ -50,28 +50,48 @@ oev_selection<-st_intersection(oev,gemeindeselection)
 rm(oev)
 st_write(oev_selection, dsn="CAMA_data/oev_selection.gpkg")
 
-##re-read exported data for other days ----
+
+##re-read exported data and remove unnecessary columns ----
 gebaeude_clip<-read_sf("CAMA_data/gebaeude_selection.gpkg")
+gebaeude_clip <- gebaeude_clip[,c(1,10,40)]
 
 bodenbedeckung_clip<-read_sf("CAMA_data/bodenbedeckung_selection.gpkg")
+bodenbedeckung_clip<-bodenbedeckung_clip[,c(1,10,37)]
+bodenbedeckung_clip <-st_as_sf(bodenbedeckung_clip)
 
 nutzungsareal_clip<-read_sf("CAMA_data/nutzungsareal_selection.gpkg")
+nutzungsareal_clip<-nutzungsareal_clip[,c(1,11,39)]
+
 strassen_clip<-read_sf("CAMA_data/strassen_selection.gpkg")
-unique(strassen_clip$objektart)
 #reduce roads to roads associated with recreational activities
 strassen_recreational <-strassen_clip |> filter(objektart %in% c("Ausfahrt","Einfahrt","Zufahrt","3m Strasse","1m Weg" ,"2m Weg","1m Wegfragment","2m Wegfragment"))
 rm(strassen_clip)
+strassen_recreational<-strassen_recreational[,c(1,10,51)]
 
 oev_clip<-read_sf("CAMA_data/oev_selection.gpkg")
+colnames(oev_clip)
+oev_clip<-oev_clip[,c(1,10,40)]
 
-##Merge polygons---
-merge <-st_union(bodenbedeckung_clip,nutzungsareal_clip, is_coverage = TRUE)#
+## read Saskia's data ----
+df_to_sf <- function(df){
+  st_as_sf(df, coords = c("lat", "lon"), crs = 4326 , remove = FALSE)}
+activities_classified <- read_delim("test_activities_attributiert.csv", ",")
+activities_classified_sf <- df_to_sf(activities_classified)
 
-#find whether point is within a distance
-st_is_within_distance(points,camalayer,distance=2)
+#other idea
+activities_classified_sf <-read_sf("test_activities_attributiert.gpkg")
+
+activities_classified_sf <- st_transform(activities_classified_sf, crs = 2056)
+
+#alternative wuith buffer
+bodenbuf <-st_buffer(bodenbedeckung_clip, dist=10)
+activities_classified_sf$boden <-st_within(activities_classified_sf,bodenbuf)  
+  
+##find whether point is within a distance ----
+a<-st_is_within_distance(bodenbedeckung_clip,activities_classified,distance=10)
 
 ## create number if point lies within boundaries of object ----
-#i am bad at if else statements, but this could work
+
 
 #Visualize confusion matrices ----
 #source:https://stackoverflow.com/questions/23891140/r-how-to-visualize-confusion-matrix-using-the-caret-package
