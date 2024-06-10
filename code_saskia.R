@@ -189,7 +189,7 @@ summary(activities_classified_sf$stepMean)
 # apply threshold
 activities_classified_sf <- activities_classified_sf |> 
   group_by(ID) |>
-  mutate(static = stepMean < 1.812)
+  mutate(static = stepMean <  1.5)
 
 # give segments an ID
 rle_id <- function(vec) {
@@ -215,30 +215,42 @@ traj10 <- filter(activities_classified_sf, ID == "test_10")
 traj11 <- filter(activities_classified_sf, ID == "test_11")
 traj12 <- filter(activities_classified_sf, ID == "test_12")
 
-ggplot(traj1, aes(lat, lon, colour = segment_id)) +
+traj_plot1 <- ggplot(traj1, aes(lat, lon, colour = segment_id)) +
   geom_point()
-ggplot(traj2, aes(lat, lon, colour = segment_id)) +
+traj_plot2 <- ggplot(traj2, aes(lat, lon, colour = segment_id)) +
   geom_point()
-ggplot(traj3, aes(lat, lon, colour = segment_id)) +
+traj_plot3 <- ggplot(traj3, aes(lat, lon, colour = segment_id)) +
   geom_point()
-ggplot(traj4, aes(lat, lon, colour = segment_id)) +
+traj_plot4 <- ggplot(traj4, aes(lat, lon, colour = segment_id)) +
   geom_point()
-ggplot(traj5, aes(lat, lon, colour = segment_id)) +
+traj_plot5 <- ggplot(traj5, aes(lat, lon, colour = segment_id)) +
   geom_point()
-ggplot(traj6, aes(lat, lon, colour = segment_id)) +
+traj_plot6 <- ggplot(traj6, aes(lat, lon, colour = segment_id)) +
   geom_point()
-ggplot(traj7, aes(lat, lon, colour = segment_id)) +
+traj_plot7 <- ggplot(traj7, aes(lat, lon, colour = segment_id)) +
   geom_point()
-ggplot(traj8, aes(lat, lon, colour = segment_id)) +
+traj_plot8 <- ggplot(traj8, aes(lat, lon, colour = segment_id)) +
   geom_point()
-ggplot(traj9, aes(lat, lon, colour = segment_id)) +
+traj_plot9 <- ggplot(traj9, aes(lat, lon, colour = segment_id)) +
   geom_point()
-ggplot(traj10, aes(lat, lon, colour = segment_id)) +
+traj_plot10 <- ggplot(traj10, aes(lat, lon, colour = segment_id)) +
   geom_point()
-ggplot(traj11, aes(lat, lon, colour = segment_id)) +
+traj_plot11 <- ggplot(traj11, aes(lat, lon, colour = segment_id)) +
   geom_point()
-ggplot(traj12, aes(lat, lon, colour = segment_id)) +
+traj_plot12 <- ggplot(traj12, aes(lat, lon, colour = segment_id)) +
   geom_point()
+ggsave("traj_plots/traj_plot1.png", traj_plot1)
+ggsave("traj_plots/traj_plot2.png", traj_plot2)
+ggsave("traj_plots/traj_plot3.png", traj_plot3)
+ggsave("traj_plots/traj_plot4.png", traj_plot4)
+ggsave("traj_plots/traj_plot5.png", traj_plot5)
+ggsave("traj_plots/traj_plot6.png", traj_plot6)
+ggsave("traj_plots/traj_plot7.png", traj_plot7)
+ggsave("traj_plots/traj_plot8.png", traj_plot8)
+ggsave("traj_plots/traj_plot9.png", traj_plot9)
+ggsave("traj_plots/traj_plot10.png", traj_plot10)
+ggsave("traj_plots/traj_plot11.png", traj_plot11)
+ggsave("traj_plots/traj_plot12.png", traj_plot12)
 
 
 # Number of stops ####
@@ -342,6 +354,17 @@ plot(stops~Attribute_factor, data = summary)
 plot(not_stops~Attribute_factor, data = summary)
 summary$stop_ratio <- summary$not_stops/summary$stops
 plot(stop_ratio~Attribute_factor, data = summary)
+
+# Acceleration ####
+acceleration <- function(s1, s2, t1, t2){
+  as.numeric((s2-s1/t2-t1))
+}
+
+  
+activities_classified_sf <- activities_classified_sf |> 
+mutate(acceleration = 
+    acceleration(speed, lag(speed), timelag_sec, lag(timelag_sec)))
+  
 
 
 # Sinuosity ##### 
