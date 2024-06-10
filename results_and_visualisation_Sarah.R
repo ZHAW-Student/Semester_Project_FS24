@@ -85,12 +85,15 @@ activities_classified_sf <- st_transform(activities_classified_sf, crs = 2056)
 
 #alternative wuith buffer
 bodenbuf <-st_buffer(bodenbedeckung_clip, dist=10)
-activities_classified_sf$boden <-st_within(activities_classified_sf,bodenbuf)  
+activities_classified_sf$boden <-st_within(activities_classified_sf,bodenbuf, perpared = TRUE)  
   
 ##find whether point is within a distance ----
-a<-st_is_within_distance(bodenbedeckung_clip,activities_classified,distance=10)
+testtest <- activities_classified_sf[1:10,]
+test <- st_is_within_distance(x = testtest, y = bodenbedeckung_clip, 100, remove_self = FALSE)
+testtest[1]
 
-## create number if point lies within boundaries of object ----
+
+## crtesttest## create number if point lies within boundaries of object ----
 
 
 #Visualize confusion matrices ----
