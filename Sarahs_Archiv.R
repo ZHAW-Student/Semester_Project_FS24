@@ -54,3 +54,57 @@ activities_classified_sf <- df_to_sf(activities_classified)
 #alternative with buffer
 bodenbuf <-st_buffer(bodenbedeckung_clip, dist=10)
 activities_classified_sf$boden <-st_within(activities_classified_sf,bodenbuf, perpared = TRUE)  
+
+
+
+
+bodenbedeckung_test[1]
+
+overlap_test <-function(output_list){
+  list_df<-as.data.frame(do.call(rbind, output_list))
+  list_df$test<-TRUE
+  list_df$id_cama <-rownames(list_df)
+  list_df <- subset(list_df, select = c(test, id_cama))
+  list_df$id_cama <-as.numeric(str_sub(list_df$id_cama,4))}
+
+
+
+bodenbedeckung_test <- st_is_within_distance(x = activities_classified_sf, y = bodenbedeckung_clip, dist = units::set_units(20, "m"), remove_self = FALSE)
+
+
+##messy attempts to get the code to work
+
+a<-list_df<-as.data.frame(do.call(rbind, bodenbedeckung_test,optional=TRUE)
+
+o<-do.call(rbind.data.frame, Map(cbind, V1 = bodenbedeckung_test))
+k<-bodenbedeckung_test |> map_df(as_tibble)
+
+
+tibble::enframe(bodenbedeckung_test, name = 'ID', value = 'V1') %>% tidyr::unnest(V1)
+
+g<-data.frame(t(data.frame(t(sapply(bodenbedeckung_test,c)))))
+colnames(g)[1]="test"
+g[g=="integer(0)"]<-NA
+g<-as.numeric(unlist(g))
+
+list_df<-as.data.frame(do.call(cbind, bodenbedeckung_test))
+
+list_df<-as.data.frame(do.call(rbind, bodenbedeckung_test) )
+str(bodenbedeckung_test)
+e<-data.frame(matrix(unlist(bodenbedeckung_test), nrow=13636, byrow=T))
+r<-do.call(rbind.data.frame, bodenbedeckung_test)
+
+t<- data.frame(matrix(unlist(bodenbedeckung_test), nrow=length(bodenbedeckung_test), byrow=TRUE))
+
+s<- data.frame(matrix(unlist(bodenbedeckung_test), nrow=length(bodenbedeckung_test), byrow=TRUE))
+
+w<-data.frame(lapply(bodenbedeckung_test, \(x) ifelse(is.null(x), NA, x)), a = "a")
+
+
+
+q<-do.call(rbind.data.frame, lapply(bodenbedeckung_test, function(i)replace(i, length(i) == NULL, NA)))
+
+tests<-overlap_test(bodenbedeckung_test)
+
+activities_classified_sf<-left_join(activities_classified_sf,tests,by="id_cama")
+activities_classified_sf<-activities_classified_sf |> rename(bodenbedeckung = test)

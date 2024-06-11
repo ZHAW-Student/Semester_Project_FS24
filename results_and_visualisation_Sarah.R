@@ -9,6 +9,8 @@ library("caret")
 library("rpart")
 library("yardstick")
 library("stringr")
+library("data.table")
+library("purrr")
 
 #Cama workflow ----
 
@@ -73,7 +75,7 @@ oev_clip<-read_sf("CAMA_data/oev_selection.gpkg")
 colnames(oev_clip)
 oev_clip<-oev_clip[,c(1,10,40)]
 
-#read data
+##read activity data ----
 activities_classified_sf <-read_sf("test_activities_attributiert.gpkg")
 
 activities_classified_sf <- st_transform(activities_classified_sf, crs = 2056)
@@ -83,18 +85,16 @@ activities_classified_sf$id_cama<- 1:nrow(activities_classified_sf)
 ##(Bodenbedeckung)find whether point is within a distance----
 bodenbedeckung_test <- st_is_within_distance(x = activities_classified_sf, y = bodenbedeckung_clip, dist = units::set_units(20, "m"), remove_self = FALSE)
 
-bodenbedeckung_test[1]
+#alternative with buffer
+bodenbuf <-st_buffer(bodenbedeckung_clip, dist=10)
 
-overlap_test <-function(output_list){
-  list_df<-as.data.frame(do.call(rbind, output_list))
-  list_df$test<-TRUE
-  list_df$id_cama <-rownames(list_df)
-  list_df$id_cama <-as.numeric(str_sub(list_df$id_cama,4))
-  list_df <- subset(list_df, select = c(test, id_cama))}
+activities_classified_sf$boden <-st_within(activities_classified_sf,bodenbuf, perpared = TRUE)  
 
-tests<-overlap_test(test)
-activities_classified_sf<-left_join(activities_classified_sf,tests,by="id_cama")
-activities_classified_sf<-activities_classified_sf |> rename(bodenbedeckung = test)
+f<-st_join(activities_classified_sf, bodenbuf, join=st_within,left=TRUE, largest=TRUE)
+
+
+#my code again
+
 
 
 st_write(activities_classified_sf, dsn="CAMA_data/activities cama.gpkg")
