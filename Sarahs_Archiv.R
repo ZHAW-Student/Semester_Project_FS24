@@ -43,3 +43,14 @@ borders <- all_data |>
 tmap_mode("view")
 tm_shape(borders)+
   tm_polygons(col="ort")
+
+
+## read Saskia's data ----
+df_to_sf <- function(df){
+  st_as_sf(df, coords = c("lat", "lon"), crs = 4326 , remove = FALSE)}
+activities_classified <- read_delim("test_activities_attributiert.csv", ",")
+activities_classified_sf <- df_to_sf(activities_classified)
+
+#alternative with buffer
+bodenbuf <-st_buffer(bodenbedeckung_clip, dist=10)
+activities_classified_sf$boden <-st_within(activities_classified_sf,bodenbuf, perpared = TRUE)  

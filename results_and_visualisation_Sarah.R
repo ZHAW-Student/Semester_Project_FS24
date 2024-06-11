@@ -8,6 +8,7 @@ library("terra")
 library("caret")
 library("rpart")
 library("yardstick")
+library("stringr")
 
 #Cama workflow ----
 
@@ -72,28 +73,33 @@ oev_clip<-read_sf("CAMA_data/oev_selection.gpkg")
 colnames(oev_clip)
 oev_clip<-oev_clip[,c(1,10,40)]
 
-## read Saskia's data ----
-df_to_sf <- function(df){
-  st_as_sf(df, coords = c("lat", "lon"), crs = 4326 , remove = FALSE)}
-activities_classified <- read_delim("test_activities_attributiert.csv", ",")
-activities_classified_sf <- df_to_sf(activities_classified)
-
-#other idea
+#read data
 activities_classified_sf <-read_sf("test_activities_attributiert.gpkg")
 
 activities_classified_sf <- st_transform(activities_classified_sf, crs = 2056)
-
-#alternative wuith buffer
-bodenbuf <-st_buffer(bodenbedeckung_clip, dist=10)
-activities_classified_sf$boden <-st_within(activities_classified_sf,bodenbuf, perpared = TRUE)  
+#create index
+activities_classified_sf$id_cama<- 1:nrow(activities_classified_sf)
   
-##find whether point is within a distance ----
-testtest <- activities_classified_sf[1:10,]
-test <- st_is_within_distance(x = testtest, y = bodenbedeckung_clip, 100, remove_self = FALSE)
-testtest[1]
+##(Bodenbedeckung)find whether point is within a distance----
+bodenbedeckung_test <- st_is_within_distance(x = activities_classified_sf, y = bodenbedeckung_clip, dist = units::set_units(20, "m"), remove_self = FALSE)
+
+bodenbedeckung_test[1]
+
+overlap_test <-function(output_list){
+  list_df<-as.data.frame(do.call(rbind, output_list))
+  list_df$test<-TRUE
+  list_df$id_cama <-rownames(list_df)
+  list_df$id_cama <-as.numeric(str_sub(list_df$id_cama,4))
+  list_df <- subset(list_df, select = c(test, id_cama))}
+
+tests<-overlap_test(test)
+activities_classified_sf<-left_join(activities_classified_sf,tests,by="id_cama")
+activities_classified_sf<-activities_classified_sf |> rename(bodenbedeckung = test)
 
 
-## crtesttest## create number if point lies within boundaries of object ----
+st_write(activities_classified_sf, dsn="CAMA_data/activities cama.gpkg")
+
+## create number if point lies within boundaries of object ----
 
 
 #Visualize confusion matrices ----
