@@ -51,6 +51,9 @@ df_to_sf <- function(df){
 activities_classified <- read_delim("test_activities_attributiert.csv", ",")
 activities_classified_sf <- df_to_sf(activities_classified)
 
+#create index
+activities_classified_sf$id_cama<- 1:nrow(activities_classified_sf)
+
 #alternative with buffer
 bodenbuf <-st_buffer(bodenbedeckung_clip, dist=10)
 activities_classified_sf$boden <-st_within(activities_classified_sf,bodenbuf, perpared = TRUE)  
@@ -108,3 +111,47 @@ tests<-overlap_test(bodenbedeckung_test)
 
 activities_classified_sf<-left_join(activities_classified_sf,tests,by="id_cama")
 activities_classified_sf<-activities_classified_sf |> rename(bodenbedeckung = test)
+
+bodenbedeckung_test <- st_is_within_distance(x = activities_classified_sf, y = bodenbedeckung_clip, dist = units::set_units(20, "m"), remove_self = FALSE)
+
+#alternative with buffer
+
+
+
+activities_with_objects$recreation <- 
+  ifelse(activities_with_objects$recreation_b == "", TRUE, 
+         ifelse(activities_with_objects$recreation_n == "" , TRUE,
+                ifelse(activities_with_objects$recreation_s  == "", TRUE, FALSE)))
+
+activities_with_objects$recreation_ <- if_else(activities_with_objects$obj_strassen == ""| activities_with_objects$obj_nutzung == "" |
+                                                 activities_with_objects$obj_boden == ""|
+                                                 activities_with_objects$obj_strassen == ""&
+                                                 activities_with_objects$obj_nutzung == ""|
+                                                 activities_with_objects$obj_nutzung == "" &
+                                                 activities_with_objects$obj_boden == ""| 
+                                                 activities_with_objects$obj_strassen == ""&
+                                                 activities_with_objects$obj_boden == ""|
+                                                 activities_with_objects$obj_strassen == ""&
+                                                 activities_with_objects$obj_boden == ""&
+                                                 activities_with_objects$obj_boden == "",
+                                               0, 1)
+
+
+activities_with_objects$recreationö <-is.na(activities_with_objects$obj_boden & activities_with_objects$obj_nutzung & activities_with_objects$obj_strassen)
+
+if_else(activities_with_objects$obj_nutzung == "" , TRUE, if_else(activities_with_objects$obj_boden == "" , TRUE, FALSE) ))
+
+
+activities_with_objects$recreation_ <- if_else(activities_with_objects$obj_strassen == "" , TRUE, 
+                                               if_else(activities_with_objects$obj_nutzung == "" , TRUE, if_else(activities_with_objects$obj_boden == "" , TRUE, FALSE) ))
+
+
+
+activities_with_objects$Den<-ifelse (is.na(activities_with_objects$obj_boden) | is.na(activities_with_objects$obj_nutzung) | is.na(activities_with_objects$obj_strassen), "yes", "no")
+
+
+
+
+activities_with_objects$recreation<-if_else( any ( NA %in% c(activities_with_objects$recreation_b,activities_with_objects$recreation_n,activities_with_objects$recreation_s)),TRUE, FALSE)
+
+
