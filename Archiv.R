@@ -11,3 +11,30 @@
 # act10 <- htmlTreeParse(file = "activities/11163561276.gpx", useInternalNodes = TRUE)
 # act11 <- htmlTreeParse(file = "activities/11180057399.gpx", useInternalNodes = TRUE)
 # act12 <- htmlTreeParse(file = "activities/11238978781.gpx", useInternalNodes = TRUE)
+
+# Calculate steplength and speed for 10 sec ####
+activities_classified_sf <- activities_classified_sf |> 
+  group_by(ID) |>
+  mutate(
+    steplenght10 = distance_by_element(lag(geometry, n = 10), geometry)
+  )
+
+activities_classified_sf <- activities_classified_sf |> 
+  group_by(ID) |>
+  mutate(
+    timelag_sec10 = difftime_secs(lead(DateTime, n = 10), DateTime)
+  )
+# calculate speed between locations
+activities_classified_sf$speed <- activities_classified_sf$steplenght/activities_classified_sf$timelag_sec
+activities_classified_sf$speed <- activities_classified_sf$steplenght10/activities_classified_sf$timelag_sec10
+
+activities_classified_sf <- activities_classified_sf |> 
+  group_by(ID) |>
+  mutate(
+    speed = steplenght/timelag_sec
+  )
+activities_classified_sf <- activities_classified_sf |> 
+  group_by(ID) |>
+  mutate(
+    speed10 = steplenght10/timelag_sec10
+  )

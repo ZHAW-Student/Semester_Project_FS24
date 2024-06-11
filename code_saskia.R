@@ -90,7 +90,7 @@ test_activities_sf <- df_to_sf(test_activities_df)
 # export sf object for setting attributes in GIS
 export_test_activities <- st_write(test_activities_sf, "test_activities.shp")
 
-# import csv with attributes and convert to sf
+# import csv with attributes and convert to sf ####
 activities_classified <- read_delim("test_activities_attributiert.csv", ",")
 
 activities_classified_sf <- df_to_sf(activities_classified)
@@ -105,7 +105,7 @@ activities_classified_sf <- activities_classified_sf |>
   )
 
 # Calculate attributes ####
-# calculate time lag
+## calculate time lag  ####
 difftime_secs <- function(later, now){
   as.numeric(difftime(later, now, units = "secs"))
 }
@@ -116,13 +116,7 @@ activities_classified_sf <- activities_classified_sf |>
     timelag_sec = difftime_secs(lead(DateTime,), DateTime)
   )
 
-activities_classified_sf <- activities_classified_sf |> 
-  group_by(ID) |>
-  mutate(
-    timelag_sec10 = difftime_secs(lead(DateTime, n = 10), DateTime)
-  )
-
-# calculate distance between locations
+## calculate distance between locations  ####
 distance_by_element <- function(later, now){
   as.numeric(
     st_distance(later, now, by_element = TRUE)
@@ -134,36 +128,16 @@ activities_classified_sf <- activities_classified_sf |>
   mutate(
     steplenght = distance_by_element(lag(geometry), geometry)
   )
-activities_classified_sf <- activities_classified_sf |> 
-  group_by(ID) |>
-  mutate(
-    steplenght10 = distance_by_element(lag(geometry, n = 10), geometry)
-  )
 
-# calculate speed between locations
-activities_classified_sf$speed <- activities_classified_sf$steplenght/activities_classified_sf$timelag_sec
-activities_classified_sf$speed <- activities_classified_sf$steplenght10/activities_classified_sf$timelag_sec10
-
-activities_classified_sf <- activities_classified_sf |> 
-  group_by(ID) |>
-  mutate(
-    speed = steplenght/timelag_sec
-  )
-activities_classified_sf <- activities_classified_sf |> 
-  group_by(ID) |>
-  mutate(
-    speed10 = steplenght10/timelag_sec10
-  )
-
-# Check plausibility of calculated parameters
+## Check plausibility of calculated parameters  ####
 plot(activities_classified_sf$timelag_sec)
 plot(activities_classified_sf$steplenght)
 plot(activities_classified_sf$speed)
   
 
 # Segmentation ####
-
-# Preperation
+## Preperation  ####
+# Specify a temporal window for mean step
 activities_classified_sf <- activities_classified_sf |> 
   group_by(ID) |>
   mutate(
@@ -180,6 +154,13 @@ activities_classified_sf <- activities_classified_sf |>
     stepMean = mean(c(nMinus2, nMinus1, nPlus1, nPlus2))
   ) |>
   ungroup()
+
+# calculate mean speed
+activities_classified_sf <- activities_classified_sf |> 
+  group_by(ID) |>
+  mutate(
+    speedMean = stepMean/timelag_sec
+  )
 
 # Explore mean step to define threashold 
 hist(activities_classified_sf$stepMean)
@@ -199,9 +180,11 @@ rle_id <- function(vec) {
 
 activities_classified_sf <- activities_classified_sf |> 
   group_by(ID) |>
-  mutate(segment_id = rle_id(static))
+  mutate(segment_id = rle_id(static))|> 
+  ungroup()
 
-# subset trajectories ####
+# single trajectories ####
+## extract single trajectories####
 traj1 <- filter(activities_classified_sf, ID == "test_1")
 traj2 <- filter(activities_classified_sf, ID == "test_2")
 traj3 <- filter(activities_classified_sf, ID == "test_3")
@@ -214,6 +197,8 @@ traj9 <- filter(activities_classified_sf, ID == "test_9")
 traj10 <- filter(activities_classified_sf, ID == "test_10")
 traj11 <- filter(activities_classified_sf, ID == "test_11")
 traj12 <- filter(activities_classified_sf, ID == "test_12")
+
+## plot single trajectories with segmentation ####
 
 traj_plot1 <- ggplot(traj1, aes(lat, lon, colour = segment_id)) +
   geom_point()
@@ -239,6 +224,8 @@ traj_plot11 <- ggplot(traj11, aes(lat, lon, colour = segment_id)) +
   geom_point()
 traj_plot12 <- ggplot(traj12, aes(lat, lon, colour = segment_id)) +
   geom_point()
+
+## save plots ####
 ggsave("traj_plots/traj_plot1.png", traj_plot1)
 ggsave("traj_plots/traj_plot2.png", traj_plot2)
 ggsave("traj_plots/traj_plot3.png", traj_plot3)
@@ -260,8 +247,7 @@ summary <- activities_classified_sf |>
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE), 
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 
 # stops per trajectory
@@ -269,85 +255,73 @@ stops_traj1 <- traj1 |>
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE),
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 stops_traj2 <- traj2 |> 
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE),
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 stops_traj3 <- traj3 |> 
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE), 
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 stops_traj4 <- traj4 |> 
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE),
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 stops_traj5 <- traj5 |> 
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE),
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 stops_traj6 <- traj6 |> 
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE), 
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 stops_traj7 <- traj7 |> 
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE), 
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 stops_traj8 <- traj8 |> 
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE), 
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 stops_traj9 <- traj9 |> 
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE), 
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 stops_traj10 <- traj10 |> 
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE),
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 stops_traj11 <- traj11 |> 
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE), 
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 stops_traj12 <- traj12 |> 
   group_by(Attribute_factor) |> 
   summarize(stops = sum(static, na.rm = TRUE),
             not_stops = sum(!static, na.rm = TRUE),
-            mean_speed = mean(speed, na.rm =TRUE),
-            mean_speed10 = mean(speed10, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE))
 
 plot(stops~Attribute_factor, data = summary)
@@ -356,16 +330,64 @@ summary$stop_ratio <- summary$not_stops/summary$stops
 plot(stop_ratio~Attribute_factor, data = summary)
 
 # Acceleration ####
-acceleration <- function(s1, s2, t1, t2){
-  as.numeric((s2-s1/t2-t1))
+acceleration <- function(s1, s2, t){
+  as.numeric((s2-s1)/(t))
 }
 
   
 activities_classified_sf <- activities_classified_sf |> 
 mutate(acceleration = 
-    acceleration(speed, lag(speed), timelag_sec, lag(timelag_sec)))
-  
+    acceleration(lag(speedMean), speedMean, timelag_sec))
 
+summary <- activities_classified_sf |> 
+  group_by(ID) |> 
+  group_by(Attribute_factor) |> 
+  summarize(stops = sum(static, na.rm = TRUE), 
+            not_stops = sum(!static, na.rm = TRUE),
+            stop_ratio = not_stops/stops,
+            mean_speed = mean(speedMean, na.rm =TRUE),
+            mean_step = mean(stepMean, na.rm = TRUE),
+            mean_acceleration = mean(acceleration, na.rm = TRUE),
+            mean_lenght = length(segment_id)
+            ) |> 
+  ungroup()
+
+# Export csv
+st_write(activities_classified_sf, "test_activities_with_attributes.csv")
+
+# decision tree for attribute based classification ####
+## 1. based on mean speed ####
+test_classification <- activities_classified_sf |> 
+  group_by(segment_id) |> 
+  summarize(mean_acceleration = mean(acceleration, na.rm = TRUE),
+            mean_speed = mean(speedMean, na.rm =TRUE),
+            mean_step = mean(stepMean, na.rm = TRUE),
+            lenght = length(segment_id)
+            ) |> 
+  ungroup()
+
+test_classification <- test_classification |> 
+  mutate(shopping = if_else(mean_speed > 0.9 | is.na(mean_speed) & mean_acceleration > 0.1 & mean_step > 2.8 ,  0 ,  1 ),
+         recreation = if_else(shopping %in% c( 0 ) & mean_step < 2.6 & mean_acceleration < 0.012 & mean_speed < 2.6 ,  1 ,  0 ),
+         travel = if_else(shopping %in% c( 0 ) & recreation %in% c( 0 ) & !is.na(mean_step),  1 ,  0 ))
+
+test_classification <- test_classification |> 
+  mutate(activity = if_else(shopping == 1, "shopping", 
+                            if_else(recreation == 1, "recreation", "travel"),"NA"))
+test_classification <- na.omit(test_classification)
+test_classification <- test_classification |> 
+  mutate(activity_factor = as.factor(activity)) 
+  
+  
+test_activities_classified <- st_join(activities_classified_sf, test_classification, left = TRUE)
+
+# Test classification ####
+confus <-conf_mat(data = test_activities_classified, truth = Attribute_factor, estimate = activity_factor)
+
+autoplot(confus, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
 
 # Sinuosity ##### 
 TrajRediscretize(traj1, 2, simConstantSpeed = FALSE)
