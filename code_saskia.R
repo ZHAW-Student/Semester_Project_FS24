@@ -8,6 +8,8 @@ library("ggplot2")
 library("tidyverse")
 library("readr")
 library("trajr")
+library("yardstick")
+library("caret") 
 
 # read activities
 myfiles <- list.files("activities/.", pattern = "*.gpx")
@@ -77,7 +79,7 @@ act12_df$ID_text <- "test_Regensdorf_Buero_Coop"
 
 # function to convert df into sf object
 df_to_sf <- function(df){
-  st_as_sf(df, coords = c("lat", "lon"), crs = 4326 , remove = FALSE)
+  st_as_sf(df, coords = c("lon", "lat"), crs = 4326 , remove = FALSE)
 }
 
 # combine all activitites to one data frame
@@ -85,7 +87,6 @@ test_activities_df <- rbind(act1_df, act2_df, act3_df, act4_df, act5_df, act6_df
 
 # turn data frame into sf object
 test_activities_sf <- df_to_sf(test_activities_df)
-
 
 # export sf object for setting attributes in GIS
 export_test_activities <- st_write(test_activities_sf, "test_activities.shp")
@@ -132,8 +133,25 @@ activities_classified_sf <- activities_classified_sf |>
 ## Check plausibility of calculated parameters  ####
 plot(activities_classified_sf$timelag_sec)
 plot(activities_classified_sf$steplenght)
-plot(activities_classified_sf$speed)
-  
+boxplot(activities_classified_sf$timelag_sec)
+boxplot(activities_classified_sf$steplenght)
+summary(activities_classified_sf$timelag_sec)
+summary(activities_classified_sf$steplenght)
+
+# based on this check, i will remove all timelag > 5 and steplenght > 5
+
+outliers_timelag <- filter(activities_classified_sf, timelag_sec >= 5)
+activities_classified_sf <- activities_classified_sf[which(activities_classified_sf$timelag_sec <= 5),]
+outliers_steplenght <- filter(activities_classified_sf, steplenght >= 5)
+activities_classified_sf <- activities_classified_sf[which(activities_classified_sf$steplenght <= 5),]
+
+
+
+# plot again to make sure it's better
+plot(activities_classified_sf$timelag_sec)
+plot(activities_classified_sf$steplenght)
+boxplot(activities_classified_sf$timelag_sec)
+boxplot(activities_classified_sf$steplenght)
 
 # Segmentation ####
 ## Preperation  ####
@@ -353,12 +371,16 @@ summary <- activities_classified_sf |>
   ungroup()
 
 # Export csv
-st_write(activities_classified_sf, "test_activities_with_attributes.csv")
+# st_write(activities_classified_sf, "test_activities_with_attributes_korrigiert.csv")
+
+activities_for_classification <- activities_classified_sf |> 
+  mutate(combi_ID = paste(ID, segment_id, sep = "_"))
+  
 
 # decision tree for attribute based classification ####
 ## 1. based on mean speed ####
-test_classification <- activities_classified_sf |> 
-  group_by(segment_id) |> 
+test_classification <- activities_for_classification |> 
+  group_by(combi_ID) |> 
   summarize(mean_acceleration = mean(acceleration, na.rm = TRUE),
             mean_speed = mean(speedMean, na.rm =TRUE),
             mean_step = mean(stepMean, na.rm = TRUE),
@@ -367,9 +389,20 @@ test_classification <- activities_classified_sf |>
   ungroup()
 
 test_classification <- test_classification |> 
-  mutate(shopping = if_else(mean_speed > 0.9 | is.na(mean_speed) & mean_acceleration > 0.1 & mean_step > 2.8 ,  0 ,  1 ),
-         recreation = if_else(shopping %in% c( 0 ) & mean_step < 2.6 & mean_acceleration < 0.012 & mean_speed < 2.6 ,  1 ,  0 ),
-         travel = if_else(shopping %in% c( 0 ) & recreation %in% c( 0 ) & !is.na(mean_step),  1 ,  0 ))
+  mutate(travel = if_else(mean_speed > 1.7 & mean_speed < 4
+                          & mean_step > 1.7 & mean_step < 4
+                          & mean_acceleration < 0.003,  1 ,  0 ),
+         recreation = if_else(travel %in% c( 0 ) 
+                              & mean_speed > 1.1  & mean_speed < 1.7
+                              & mean_step > 1.2 & mean_step < 1.7
+                              & mean_acceleration < 0.003,  1 ,  0 ),
+         shopping = if_else(travel %in% c( 0 ) 
+                            & recreation %in% c( 0 )
+                            & mean_speed > 5 |  mean_speed < 1.1
+                            & mean_step > 5 | mean_step < 1.2
+                            & mean_acceleration > 0.01
+                              ,  1 ,  0 ))
+
 
 test_classification <- test_classification |> 
   mutate(activity = if_else(shopping == 1, "shopping", 
@@ -388,6 +421,9 @@ autoplot(confus, type="heatmap")+
   scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
   theme(legend.position = "right")+
   labs(fill="frequency")
+
+
+confusionMatrix(test_activities_classified$Attribute_factor, test_activities_classified$activity_factor)
 
 # Sinuosity ##### 
 TrajRediscretize(traj1, 2, simConstantSpeed = FALSE)
