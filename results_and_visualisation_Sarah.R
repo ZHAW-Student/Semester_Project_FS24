@@ -10,7 +10,6 @@ library("rpart")
 library("yardstick")
 library("stringr")
 
-
 #Cama workflow ----
 
 ##Prepare clip data----
@@ -131,7 +130,6 @@ st_write(activities_classified_sf, dsn="CAMA_data/activities cama_objects.gpkg")
 ##reread data ----
 activities_with_objects<-read_sf("CAMA_data/activities cama_objects.gpkg")
 
-
 activities_with_objects$recreation_b <- if_else(is.na(activities_with_objects$obj_boden == TRUE) , FALSE, TRUE)
 
 activities_with_objects$recreation_n <- if_else(is.na(activities_with_objects$obj_nutzung == TRUE) , FALSE, TRUE)
@@ -176,20 +174,12 @@ autoplot(confus, type="heatmap")+
 
 
 #CART workflow ----
-#http://www.sthda.com/english/articles/35-statistical-machine-learning-essentials/141-cart-model-decision-tree-essentials/#classification-trees
+#http://www.sthda.com/english/articles/35-statistical-machine-learning-essentials/141-cart-model-decision-tree-essentials/#classification-trees 
+#and r book
 
 ##import movement attributes ----
-activities_attributes <-read_csv("test_activities_with_attributes.csv")
+activities_attributes <-read_csv("test_activities_with_attributes_filtered.csv")
 activities_attributes$ts_POSIXct <-as.POSIXct(activities_attributes$ts_POSIXct)
-
-
-tmap_mode("view")
-tm_shape(activities_with_objects)+
-  tm_dots("Attribut")
-
-tmap_mode("view")
-tm_shape(activities_attributes_sf)+
-  tm_dots("Attribute_factor")
 
 activities_attributes_sf <-st_as_sf(activities_attributes,coords = c("lon","lat"), crs = 4326 , remove = FALSE) #anders herum reingelesen
 
@@ -203,17 +193,18 @@ text(model_full, cex=0.8,use.n = TRUE, xpd = TRUE)
 model_full$cptable
 plotcp(model_full)
 
-
-model <-rpart(Attribute_factor~ speedMean+stepMean+acceleration, data=activities_attributes)
-plot(model)
-text(model, cex=0.8,use.n = TRUE, xpd = TRUE)
-model$cptable
-plotcp(model)
-
 # Make predictions on the test data
-predicted.classes <- model %>% 
+predicted.classes <- model_full %>% 
   predict(test.data, type = "class")
 head(predicted.classes)
 
 # Compute model accuracy rate on test data
 mean(predicted.classes == test.data$diabetes)
+
+### Confusion matrix for test- data ---
+confus <-conf_mat(data = test_classification, truth = Attribute_factor, estimate = activity_factor)
+
+autoplot(confus, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
