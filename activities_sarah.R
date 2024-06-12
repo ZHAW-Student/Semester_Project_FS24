@@ -84,9 +84,12 @@ activities_sarah_df <- rbind(sarah_1_df, sarah_2_df, sarah_3_df, sarah_4_df, sar
 # turn data frame into sf object
 activities_sarah_sf <- df_to_sf(activities_sarah_df)
 
-tmap_mode("view")
-tm_shape(activities_sarah_sf)+
-  tm_dots(col="ID_text")
+#create new row for activity- classification and classify trajectories with only one activity
+
+
+activities_sarah_sf<-activities_sarah_sf |> 
+  mutate(Attribut = case_when(ID_text == "sarah_Denner_Einkauf" ~ "recreation", ID_text == "sarah_Spaziergang_am_Morgen_Bub"~ "recreation",ID_text == "sarah_Spaziergang_Klafi_kleine_Runde"  ~ "recreation", ID_text == "sarah_Klafi_von_Zug_Heim"  ~ "travel",ID_text == "sarah_WB_Heim"~ "travel" ,ID_text == "sarah_Zu_Bus_Klafi"~ "travel",ID_text == "sarah_Zum_Bus_Bub"~ "travel",ID_text == "sarah_Zum_Zug_Liestal"~ "travel",ID_text == "sarah_Klafi_Feld"~ "recreation" ,ID_text == "sarah_Migros_groesserer_Einkauf"~ "recreation",ID_text == "sarah_Migros_kleiner_Einkauf"~ "recreation" ,ID_text == "sarah_Rosengarten_und_Shopping_Winti"~ "recreation"  ))
+  
 
 # export sf object for setting attributes in GIS
 export_activities_sarah <- st_write(activities_sarah_sf, "activities_sarah.csv")

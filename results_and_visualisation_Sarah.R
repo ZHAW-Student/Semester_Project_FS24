@@ -148,7 +148,7 @@ activities_with_objects$oev <- if_else(is.na(activities_with_objects$obj_oev== T
 activities_with_objects$gebaeude <- if_else(is.na(activities_with_objects$obj_geb) == TRUE , FALSE, TRUE)    
 activities_with_objects<-activities_with_objects[,c(1:7,13,17:19)]
 
-##Classify
+##classify ----
 test_classification <- activities_with_objects |> 
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
                   if_else(recreation == TRUE, "recreation",
