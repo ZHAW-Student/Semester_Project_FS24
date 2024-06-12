@@ -9,8 +9,7 @@ library("caret")
 library("rpart")
 library("yardstick")
 library("stringr")
-library("data.table")
-library("purrr")
+
 
 #Cama workflow ----
 
@@ -132,38 +131,84 @@ st_write(activities_classified_sf, dsn="CAMA_data/activities cama_objects.gpkg")
 ##reread data ----
 activities_with_objects<-read_sf("CAMA_data/activities cama_objects.gpkg")
 
-activities_with_objects$recreation_b <- if_else(activities_with_objects$obj_boden == "" , FALSE, TRUE)
 
-activities_with_objects$recreation_n <- if_else(activities_with_objects$obj_nutzung == "" , FALSE, TRUE)
+activities_with_objects$recreation_b <- if_else(is.na(activities_with_objects$obj_boden == TRUE) , FALSE, TRUE)
 
-activities_with_objects$recreation_s <- if_else(activities_with_objects$obj_strassen == "" , FALSE, TRUE)
+activities_with_objects$recreation_n <- if_else(is.na(activities_with_objects$obj_nutzung == TRUE) , FALSE, TRUE)
 
-
-
+activities_with_objects$recreation_s <- if_else(is.na(activities_with_objects$obj_strassen == TRUE) , FALSE, TRUE)
 
 activities_with_objects<-activities_with_objects |> 
   mutate(recreation = case_when(recreation_b == TRUE ~ "TRUE", recreation_n == TRUE ~ "TRUE", recreation_s == TRUE ~ "TRUE"))
-         
-                                
+
+activities_with_objects$recreation[is.na(activities_with_objects$recreation)] <- "FALSE" 
+
+activities_with_objects$recreation<-as.logical(activities_with_objects$recreation)
+
+activities_with_objects$oev <- if_else(is.na(activities_with_objects$obj_oev== TRUE) , FALSE, TRUE)
+
+activities_with_objects$gebaeude <- if_else(is.na(activities_with_objects$obj_geb) == TRUE , FALSE, TRUE)    
+activities_with_objects<-activities_with_objects[,c(1:7,13,17:19)]
+
+##Classify
+test_classification <- activities_with_objects |> 
+  mutate(activity = if_else(gebaeude == TRUE, "shopping", 
+                  if_else(recreation == TRUE, "recreation",
+                  if_else(oev == TRUE, "travel", "recreation"),"NA")))
+
+test_classification <- test_classification |> 
+  mutate(activity_factor = as.factor(activity)) 
+test_classification <- test_classification |> 
+  mutate(Attribute_factor = as.factor(Attribut))
 
 #Visualize confusion matrices ----
 #source:https://stackoverflow.com/questions/23891140/r-how-to-visualize-confusion-matrix-using-the-caret-package
 
-testmat<-matrix(c(15,44,23,32),nrow=2,dimnames = list(c("0","1"), c("0","1")))
-
-confus <-conf_mat(testmat)
+confus <-conf_mat(data = test_classification, truth = Attribute_factor, estimate = activity_factor)
 
 autoplot(confus, type="heatmap")+
   scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
+
 #Visualize classified path ----
+
 
 #CART workflow ----
 #http://www.sthda.com/english/articles/35-statistical-machine-learning-essentials/141-cart-model-decision-tree-essentials/#classification-trees
-model <-rpart(klasse~ var+var+var, data=)
+
+##import movement attributes ----
+activities_attributes <-read_csv("test_activities_with_attributes.csv")
+activities_attributes$ts_POSIXct <-as.POSIXct(activities_attributes$ts_POSIXct)
+
+
+tmap_mode("view")
+tm_shape(activities_with_objects)+
+  tm_dots("Attribut")
+
+tmap_mode("view")
+tm_shape(activities_attributes_sf)+
+  tm_dots("Attribute_factor")
+
+activities_attributes_sf <-st_as_sf(activities_attributes,coords = c("lon","lat"), crs = 4326 , remove = FALSE) #anders herum reingelesen
+
+activities_attributes_sf <- st_transform(activities_attributes_sf, crs = 2056)
+
+activities_full<-st_join(activities_attributes_sf,activities_with_objects)
+
+model_full <-rpart(Attribute_factor~ speedMean+stepMean+acceleration+ recreation + oev + gebaeude, data=activities_full)
+plot(model_full)
+text(model_full, cex=0.8,use.n = TRUE, xpd = TRUE)
+model_full$cptable
+plotcp(model_full)
+
+
+model <-rpart(Attribute_factor~ speedMean+stepMean+acceleration, data=activities_attributes)
 plot(model)
+text(model, cex=0.8,use.n = TRUE, xpd = TRUE)
+model$cptable
+plotcp(model)
 
 # Make predictions on the test data
 predicted.classes <- model %>% 

@@ -155,3 +155,9 @@ activities_with_objects$Den<-ifelse (is.na(activities_with_objects$obj_boden) | 
 activities_with_objects$recreation<-if_else( any ( NA %in% c(activities_with_objects$recreation_b,activities_with_objects$recreation_n,activities_with_objects$recreation_s)),TRUE, FALSE)
 
 
+
+a<-left_join(activities_with_objects, activities_attributes, by=c("lat","lon","elevation","ID"))
+
+class(activities_with_objects)
+
+s<-merge(activities_attributes_sf, activities_with_objects,by = c("lat", "lon"))
