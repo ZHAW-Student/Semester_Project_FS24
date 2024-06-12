@@ -76,12 +76,7 @@ sarah_12_df$ID_text <- "sarah_Zum_Zug_Liestal"
 
 # function to convert df into sf object
 df_to_sf <- function(df){
-  st_as_sf(df, coords = c("lon", "lat"), crs = 4326 , remove = FALSE)
-}#this one works
-
-df_to_sf <- function(df){
-  st_as_sf(df, coords = c("lat", "lon"), crs = 4326 , remove = FALSE)
-}
+  st_as_sf(df, coords = c("lon", "lat"), crs = 4326 , remove = FALSE)}
 
 # combine all activitites to one data frame
 activities_sarah_df <- rbind(sarah_1_df, sarah_2_df, sarah_3_df, sarah_4_df, sarah_5_df, sarah_6_df,sarah_7_df,sarah_8_df,sarah_9_df, sarah_10_df, sarah_11_df,sarah_12_df)
@@ -94,4 +89,4 @@ tm_shape(activities_sarah_sf)+
   tm_dots(col="ID_text")
 
 # export sf object for setting attributes in GIS
-export_activities_saskia <- st_write(activities_saskia_sf, "activities_saskia.csv")
+export_activities_sarah <- st_write(activities_sarah_sf, "activities_sarah.csv")

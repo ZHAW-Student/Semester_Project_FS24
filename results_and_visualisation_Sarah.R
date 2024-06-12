@@ -152,7 +152,8 @@ activities_with_objects<-activities_with_objects[,c(1:7,13,17:19)]
 test_classification <- activities_with_objects |> 
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
                   if_else(recreation == TRUE, "recreation",
-                  if_else(oev == TRUE, "travel", "recreation"),"NA")))
+                  if_else(oev == TRUE, "travel", "NA"),"NA")))#anpassen conf- matrix
+
 
 test_classification <- test_classification |> 
   mutate(activity_factor = as.factor(activity)) 
@@ -161,7 +162,7 @@ test_classification <- test_classification |>
 
 #Visualize confusion matrices ----
 #source:https://stackoverflow.com/questions/23891140/r-how-to-visualize-confusion-matrix-using-the-caret-package
-
+na.omit()
 confus <-conf_mat(data = test_classification, truth = Attribute_factor, estimate = activity_factor)
 
 autoplot(confus, type="heatmap")+
@@ -169,16 +170,14 @@ autoplot(confus, type="heatmap")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
-
 #Visualize classified path ----
-
 
 #CART workflow ----
 #http://www.sthda.com/english/articles/35-statistical-machine-learning-essentials/141-cart-model-decision-tree-essentials/#classification-trees 
 #and r book
 
 ##import movement attributes ----
-activities_attributes <-read_csv("test_activities_with_attributes_filtered.csv")
+activities_attributes <-read_csv("test_activities_with_attributes_korrigiert.csv")
 activities_attributes$ts_POSIXct <-as.POSIXct(activities_attributes$ts_POSIXct)
 
 activities_attributes_sf <-st_as_sf(activities_attributes,coords = c("lon","lat"), crs = 4326 , remove = FALSE) #anders herum reingelesen
@@ -194,7 +193,7 @@ model_full$cptable
 plotcp(model_full)
 
 # Make predictions on the test data
-predicted.classes <- model_full %>% 
+predicted.classes <- model_full |>  
   predict(test.data, type = "class")
 head(predicted.classes)
 
