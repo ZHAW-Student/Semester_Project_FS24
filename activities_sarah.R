@@ -17,7 +17,6 @@ for (i in 1:length(myfiles)){
   assign(filename, htmlTreeParse(file = wd, useInternalNodes = TRUE))
 }
 
-
 # function to parse activities and write into data frame
 built_df <- function(activity) {
   # get coordinates
