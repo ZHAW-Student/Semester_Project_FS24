@@ -25,6 +25,9 @@ rm(gemeindegrenzen)#free up memory
 ##Reading, clipping and exporting clipped layers----
 st_layers("SWISSTLM3D_2024_LV95_LN02.gpkg")#see all contents
 
+
+################### Warning! This does take some time.  
+
 gebaeude <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bauten_gebaeude_footprint")
 gebaeude_selection<-st_intersection(gebaeude,gemeindeselection)
 rm(gebaeude)
@@ -52,7 +55,7 @@ rm(oev)
 st_write(oev_selection, dsn="CAMA_data/oev_selection.gpkg")
 
 
-##re-read clipped data and remove unnecessary columns ----
+##Re-read clipped data, remove columns ----
 gebaeude_clip<-read_sf("CAMA_data/gebaeude_selection.gpkg")
 gebaeude_clip <- gebaeude_clip[,c(1,10,40)]
 
@@ -71,7 +74,7 @@ strassen_recreational<-strassen_recreational[,c(1,10,51)]
 oev_clip<-read_sf("CAMA_data/oev_selection.gpkg")
 oev_clip<-oev_clip[,c(1,10,40)]
 
-##create Buffers ----
+##Create Buffers ----
 bodenbuf <-st_buffer(bodenbedeckung_clip, dist=10)
 rm(bodenbedeckung_clip)
 nutzungsbuf <-st_buffer(nutzungsareal_clip, dist=10)
@@ -81,8 +84,8 @@ rm(strassen_recreational)
 oevbuf <-st_buffer(oev_clip, dist=50)
 rm(oev_clip)
 
-##workflow with Saskia's training- data ----
-###read activity data  Saskia Training----
+##Workflow with Saskia's training- data ----
+###Read activity data ----
 activities_classified_sf <-read_sf("CAMA_data/test_activities_attributiert.gpkg")
 
 activities_classified_sf <- st_transform(activities_classified_sf, crs = 2056)
@@ -122,7 +125,7 @@ activities_classified_sf = subset(activities_classified_sf, select = -c(uuid.x..
 
 st_write(activities_classified_sf, dsn="CAMA_data/activities cama_objects.gpkg")
 
-###reread data ----
+###Reread object-data ----
 activities_with_objects<-read_sf("CAMA_data/activities cama_objects.gpkg")
 
 activities_with_objects$recreation_b <- if_else(is.na(activities_with_objects$obj_boden == TRUE) , FALSE, TRUE)
@@ -143,7 +146,7 @@ activities_with_objects$oev <- if_else(is.na(activities_with_objects$obj_oev== T
 activities_with_objects$gebaeude <- if_else(is.na(activities_with_objects$obj_geb) == TRUE , FALSE, TRUE)    
 activities_with_objects<-activities_with_objects[,c(1:7,13,17:19)]
 
-###classify ----
+###Classification ----
 test_classification <- activities_with_objects |> 
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
                   if_else(recreation == TRUE, "recreation",
@@ -156,7 +159,9 @@ test_classification <- test_classification |>
 test_classification <- test_classification |> 
   mutate(Attribute_factor = as.factor(Attribut))
 
-###confusion matrix ----
+st_write(test_classification, dsn="CAMA_data/ cama_classification_results_saskia_training.gpkg")#export classification results
+
+###Confusion matrix ----
 test_classification <-na.omit(test_classification)
 confus <-conf_mat(data = test_classification, truth = Attribute_factor, estimate = activity_factor)
 
@@ -166,8 +171,8 @@ autoplot(confus, type="heatmap")+
   labs(fill="frequency")
 
 
-##workflow with Sarah's test- data ----
-###read activity data  Saskia Training----
+##Workflow with Sarah's test- data ----
+###read activity data  ----
 activities_classified_sf <-read_sf("CAMA_data/activities_sarah_classified.gpkg")
 
 activities_classified_sf <- st_transform(activities_classified_sf, crs = 2056)
@@ -208,7 +213,7 @@ activities_classified_sf = subset(activities_classified_sf, select = -c(uuid.x..
 
 st_write(activities_classified_sf, dsn="CAMA_data/activities cama_objects_sarah_test.gpkg")
 
-###reread data ----
+###Reread object-data ----
 activities_with_objects<-read_sf("CAMA_data/activities cama_objects_sarah_test.gpkg")
 
 activities_with_objects$recreation_b <- if_else(is.na(activities_with_objects$obj_boden == TRUE) , FALSE, TRUE)
@@ -229,7 +234,7 @@ activities_with_objects$oev <- if_else(is.na(activities_with_objects$obj_oev== T
 activities_with_objects$gebaeude <- if_else(is.na(activities_with_objects$obj_geb) == TRUE , FALSE, TRUE)    
 activities_with_objects<-activities_with_objects[,c(1:7,13,17:19)]
 
-###classify ----
+###Classification ----
 classification <- activities_with_objects |> 
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
                     if_else(recreation == TRUE, "recreation",
@@ -240,7 +245,9 @@ classification <- classification |>
 classification <-classification |> 
   mutate(Attribute_factor = as.factor(Attribut))
 
-###confusion matrix ----
+st_write(classification, dsn="CAMA_data/ cama_classification_results_sarah.gpkg")#export classification results
+
+###Confusion matrix ----
 classification<-na.omit(classification)
 confus <-conf_mat(data = classification, truth = Attribute_factor, estimate = activity_factor)
 
@@ -262,11 +269,13 @@ autoplot(confus, type="heatmap")+
 
 #Visualize classified path ----
 
-#CART workflow ----
+#CART analysis ----
 #http://www.sthda.com/english/articles/35-statistical-machine-learning-essentials/141-cart-model-decision-tree-essentials/#classification-trees 
 #and r book
 
-##import movement attributes ----
+##Workflow based on Saskia's training- data ----
+
+###Import movement attributes of training data ----
 activities_attributes <-read_csv("test_activities_with_attributes_korrigiert.csv")
 activities_attributes$ts_POSIXct <-as.POSIXct(activities_attributes$ts_POSIXct)
 
@@ -274,23 +283,50 @@ activities_attributes_sf <-st_as_sf(activities_attributes,coords = c("lon","lat"
 
 activities_attributes_sf <- st_transform(activities_attributes_sf, crs = 2056)
 
+###Join data from CAMA and walking- attributes -----
 activities_full<-st_join(activities_attributes_sf,activities_with_objects)
 
+###Create tree ----
 model_full <-rpart(Attribute_factor~ speedMean+stepMean+acceleration+ recreation + oev + gebaeude, data=activities_full)
 plot(model_full)
 text(model_full, cex=0.8,use.n = TRUE, xpd = TRUE)
+
+###See wheter Model needs to be shortened ----
 model_full$cptable
 plotcp(model_full)
 
-# Make predictions on the test data
+###adapt Model ----
+
+
+### Confusion matrix for training- data to see performance ---
+confus <-conf_mat(data = test_classification, truth = Attribute_factor, estimate = activity_factor)
+
+autoplot(confus, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
+
+##Make predictions on the test data from Saskia ----
 predicted.classes <- model_full |>  
   predict(test.data, type = "class")
 head(predicted.classes)
 
-# Compute model accuracy rate on test data
+### Confusion matrix for Sakia's test- data to see performance ---
+confus <-conf_mat(data = test_classification, truth = Attribute_factor, estimate = activity_factor)
+
+autoplot(confus, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
+
+### Compute model accuracy rate on Sakia's test data----
 mean(predicted.classes == test.data$diabetes)
 
-### Confusion matrix for test- data ---
+
+
+
+
+## Confusion matrix for test- data ----
 confus <-conf_mat(data = test_classification, truth = Attribute_factor, estimate = activity_factor)
 
 autoplot(confus, type="heatmap")+
