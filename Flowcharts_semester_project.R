@@ -12,14 +12,30 @@ datatestsas[label='test data Saskia', shape = folder, fillcolor = beige]
 datatestsar[label='test data Sarah', shape = folder, fillcolor = beige]
 classify[label='classify manually \\n into actual walking patterns']
 
-attribute[label='workflow attribute based classification', fillcolor = aliceblue]
+attribute[label='workflow attribute \\n based classification', fillcolor = aliceblue]
 derattributes[label='derive attributes']
-threshattributes[label='set thresholds based on summaries of trajectories \\n from training data']
+threshattributes[label='set thresholds based on  \\n summaries of trajectories \\n from training data']
 classifyattributes[label='classify based on thresholds']
-validateattributes[label='validate with validation workflow']
+validate[label='validate with validation workflow']
 
-camawork[label='workflow CAMA']
-tlm[label='']
+camawork[label='workflow CAMA \\n based classification', fillcolor = aliceblue]
+tlm[label='choose swissTLM3D layers, \\n which represent certain attributes']
+buf[label='create buffers']
+intersect[label='check for presence in buffers \\n position in buffers']
+camaclass[label='classify based on \\n  presence in buffers']
+
+cartwork [label ='workflow CART \\n based classification', fillcolor = aliceblue]
+join[label='join data from \\n previous workflows \\n from the training data']
+cart [label='create CART']
+
+valwork[label='validation workflow', fillcolor = aliceblue]
+valtrain[label='apply validation steps \\n on results from \\n training data']
+
+applyattr[label='use thresholds \\n from attribute based classification \\n on test data']
+applycama[label='use classification rules \\n from CAMA based classification \\n on test data']
+applycart[label='apply CART tree to test data']
+conf[label='create confusion matix']
+acc[label='derive accuracy of classification']
 
 
 {datatrain datatestsas datatestsar} ->classify
@@ -27,11 +43,26 @@ classify -> {attribute camawork}
 attribute -> derattributes
 derattributes -> threshattributes
 threshattributes -> classifyattributes
-classifyattributes -> validateattributes
+classifyattributes -> validate
 
+camawork -> tlm
+tlm -> buf
+buf -> intersect
+intersect -> camaclass
+camaclass -> validate
+
+{derattributes intersect} -> cartwork
+cartwork -> join
+join -> cart
+cart -> validate
+
+valwork -> {valtrain applyattr applycama applycart}
+
+{valtrain applyattr applycama applycart} -> {conf acc}
 
 
 }")
+
 
 #Attribute based ----
 grViz("digraph{
