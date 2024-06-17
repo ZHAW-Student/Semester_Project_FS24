@@ -8,6 +8,8 @@ library("ggplot2")
 library("tidyverse")
 library("readr")
 library("trajr")
+library("yardstick")
+library("caret") 
 
 # read activities
 myfiles <- list.files("activities/activities_saskia.", pattern = "*.gpx")
@@ -108,6 +110,9 @@ activities_saskia_attributed_sf <- activities_saskia_attributed_sf |>
     Attribute_factor = as.factor(Attribut)
   )
 
+tmap_mode("view")
+tm_shape(activities_saskia_attributed_sf)+
+  tm_dots(col="ID_text")
 # Calculate attributes ####
 ## calculate time lag  ####
 difftime_secs <- function(later, now){
@@ -265,6 +270,9 @@ saskia_classification <- saskia_classification |>
 
 
 saskia_activities_classified <- st_join(activities_saskia_attributed_sf, saskia_classification, left = TRUE)
+
+# Export csv for other approaches
+# st_write(saskia_activities_classified, "activities_saskia_with_attributes_classified.csv")
 
 # Test classification ####
 confus <-conf_mat(data = saskia_activities_classified, truth = Attribute_factor, estimate = activity_factor)

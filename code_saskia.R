@@ -422,10 +422,6 @@ autoplot(confus, type="heatmap")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
-
+# get statistics for confusion matrix
 confusionMatrix(test_activities_classified$Attribute_factor, test_activities_classified$activity_factor)
-
-# Sinuosity ##### 
-TrajRediscretize(traj1, 2, simConstantSpeed = FALSE)
-TrajSinuosity(traj1, compass.direction = NULL)
 
