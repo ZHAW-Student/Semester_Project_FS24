@@ -149,10 +149,8 @@ activities_with_objects<-activities_with_objects[,c(1:7,13,17:19)]
 ###Classification ----
 test_classification <- activities_with_objects |> 
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
-                  if_else(recreation == TRUE, "recreation",
-                  if_else(oev == TRUE, "travel", NA),NA)))
-
-##hier evt. ändern, weil sonst hälfte mit NAs gefüllt ist
+                    if_else(oev == TRUE, "travel",
+                    if_else(recreation == TRUE, "recreation", "travel"),NA)))
 
 test_classification <- test_classification |> 
   mutate(activity_factor = as.factor(activity)) 
@@ -170,6 +168,69 @@ autoplot(confus, type="heatmap")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
+### extract single trajectories----
+traj1 <- filter(test_classification, ID == "test_1")
+traj2 <- filter(test_classification, ID == "test_2")
+traj3 <- filter(test_classification, ID == "test_3")
+traj4 <- filter(test_classification, ID == "test_4")
+traj5 <- filter(test_classification, ID == "test_5")
+traj6 <- filter(test_classification, ID == "test_6")
+traj7 <- filter(test_classification, ID == "test_7")
+traj8 <- filter(test_classification, ID == "test_8")
+traj9 <- filter(test_classification, ID == "test_9")
+traj10 <- filter(test_classification, ID == "test_10")
+traj11 <- filter(test_classification, ID == "test_11")
+traj12 <- filter(test_classification, ID == "test_12")
+
+### plot single trajectories with segmentation----
+
+traj_plot1 <- ggplot(traj1, aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot2 <- ggplot(traj2,  aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot3 <- ggplot(traj3, aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot4 <- ggplot(traj4,  aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot5 <- ggplot(traj5, aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot6 <- ggplot(traj6, aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot7 <- ggplot(traj7,  aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot8 <- ggplot(traj8,  aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut)) 
+
+traj_plot9 <- ggplot(traj9,  aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot10 <- ggplot(traj10,   aes(lat, lon, colour = activity)) +
+geom_point(aes(shape=Attribut))
+
+traj_plot11 <- ggplot(traj11,  aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+traj_plot12 <- ggplot(traj12,  aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot1
+traj_plot2
+traj_plot3
+traj_plot4
+traj_plot5
+traj_plot6
+traj_plot7
+traj_plot8
+traj_plot9
+traj_plot10
+traj_plot11
+traj_plot12
 
 ##Workflow with Sarah's test- data ----
 ###read activity data  ----
@@ -237,8 +298,9 @@ activities_with_objects<-activities_with_objects[,c(1:7,13,17:19)]
 ###Classification ----
 classification <- activities_with_objects |> 
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
-                    if_else(recreation == TRUE, "recreation",
-                    if_else(oev == TRUE, "travel", NA),NA)))
+                    if_else(oev == TRUE, "travel",
+                    if_else(recreation == TRUE, "recreation", "travel"),NA)))
+
 
 classification <- classification |> 
   mutate(activity_factor = as.factor(activity)) 
@@ -256,80 +318,165 @@ autoplot(confus, type="heatmap")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
+### extract single trajectories----
+traj1 <- filter(classification, ID == "sarah__1")
+traj2 <- filter(classification, ID == "sarah__2")
+traj3 <- filter(classification, ID == "sarah__3")
+traj4 <- filter(classification, ID == "sarah__4")
+traj5 <- filter(classification, ID == "sarah__5")
+traj6 <- filter(classification, ID == "sarah__6")
+traj7 <- filter(classification, ID == "sarah__7")
+traj8 <- filter(classification, ID == "sarah__8")
+traj9 <- filter(classification, ID == "sarah__9")
+traj10 <- filter(classification, ID == "sarah__10")
+traj11 <- filter(classification, ID == "sarah__11")
+traj12 <- filter(classification, ID == "sarah__12")
 
-#Visualize confusion matrices ----
-#source:https://stackoverflow.com/questions/23891140/r-how-to-visualize-confusion-matrix-using-the-caret-package
-na.omit()
-confus <-conf_mat(data = test_classification, truth = Attribute_factor, estimate = activity_factor)
+### plot single trajectories with segmentation----
 
-autoplot(confus, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
-  theme(legend.position = "right")+
-  labs(fill="frequency")
+traj_plot1 <- ggplot(traj1, aes( lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))
 
-#Visualize classified path ----
+traj_plot2 <- ggplot(traj2,  aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot3 <- ggplot(traj3, aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot4 <- ggplot(traj4,  aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot5 <- ggplot(traj5, aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot6 <- ggplot(traj6, aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot7 <- ggplot(traj7,  aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot8 <- ggplot(traj8,  aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut)) 
+
+traj_plot9 <- ggplot(traj9,  aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot10 <- ggplot(traj10,   aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot11 <- ggplot(traj11,  aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+traj_plot12 <- ggplot(traj12,  aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))
+
+traj_plot1
+traj_plot2
+traj_plot3
+traj_plot4
+traj_plot5
+traj_plot6
+traj_plot7
+traj_plot8
+traj_plot9
+traj_plot10
+traj_plot11
+traj_plot12
 
 #CART analysis ----
 #http://www.sthda.com/english/articles/35-statistical-machine-learning-essentials/141-cart-model-decision-tree-essentials/#classification-trees 
 #and r book
 
 ##Workflow based on Saskia's training- data ----
-
-###Import movement attributes of training data ----
+###Import movement attributes and results of CAMA analysis  ----
 activities_attributes <-read_csv("test_activities_with_attributes_korrigiert.csv")
 activities_attributes$ts_POSIXct <-as.POSIXct(activities_attributes$ts_POSIXct)
 
-activities_attributes_sf <-st_as_sf(activities_attributes,coords = c("lon","lat"), crs = 4326 , remove = FALSE) #anders herum reingelesen
+activities_attributes_sf <-st_as_sf(activities_attributes,coords = c("lon","lat"), crs = 4326 , remove = FALSE) #anders herum reingelesen wegen lat lon Fehler
 
 activities_attributes_sf <- st_transform(activities_attributes_sf, crs = 2056)
 
+cama_class_saskia_train<-read_sf("CAMA_data/ cama_classification_results_saskia_training.gpkg")
+
 ###Join data from CAMA and walking- attributes -----
-activities_full<-st_join(activities_attributes_sf,activities_with_objects)
+activities_sas_train<-st_join(activities_attributes_sf,cama_class_saskia_train)
+
+activities_sas_train$Attribute_factor.x <-as.factor(activities_sas_train$Attribute_factor.x)
 
 ###Create tree ----
-model_full <-rpart(Attribute_factor~ speedMean+stepMean+acceleration+ recreation + oev + gebaeude, data=activities_full)
-plot(model_full)
-text(model_full, cex=0.8,use.n = TRUE, xpd = TRUE)
+model_sas_train <-rpart(Attribute_factor.x~ speedMean+stepMean+acceleration+ recreation + oev + gebaeude, data=activities_sas_train, method= "class")
 
-###See wheter Model needs to be shortened ----
-model_full$cptable
-plotcp(model_full)
+### Visualize tree ----
+plot(model_sas_train)
+text(model_sas_train, cex=0.8,use.n = TRUE, xpd = TRUE)
 
-###adapt Model ----
+###See wheter tree needs to be pruned ----
+model_sas_train$cptable
+plotcp(model_sas_train)#no pruning needed
 
+###Make prediction on original data for confusion matrix----
+pred_model_sas_train<- predict(model_sas_train, type="class")
+activities_sas_train$pred<-pred_model_sas_train
 
-### Confusion matrix for training- data to see performance ---
-confus <-conf_mat(data = test_classification, truth = Attribute_factor, estimate = activity_factor)
+### Confusion matrix for training- data ---
+confus <-conf_mat(data =activities_sas_train, truth = Attribute_factor.x, estimate = pred)
 
 autoplot(confus, type="heatmap")+
   scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
+### Compute model accuracy rate on Sakia's training data----
+mean(pred_model_sas_train == activities_sas_train$Attribute_factor.x)
+
 ##Make predictions on the test data from Saskia ----
-predicted.classes <- model_full |>  
+pred_model_sas_test<- model_sas_train |>  
   predict(test.data, type = "class")
-head(predicted.classes)
 
-### Confusion matrix for Sakia's test- data to see performance ---
-confus <-conf_mat(data = test_classification, truth = Attribute_factor, estimate = activity_factor)
+activities_sas_train$pred_test_sas <-pred_model_sas_test
 
-autoplot(confus, type="heatmap")+
+### Confusion matrix for Sakia's test- data  ---
+confus_test_sas <-conf_mat(data = activities_sas_train, truth = Attribute_factor.x, estimate = pred_test_sas)
+
+autoplot(confus_test_sas, type="heatmap")+
   scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
 ### Compute model accuracy rate on Sakia's test data----
-mean(predicted.classes == test.data$diabetes)
+mean(pred_model_sas_test == activities_sas_train$Attribute_factor.x)
 
 
+##Make predictions on the test data from Sarah ----
+activities_attributes_sarah <-read_csv("test_activities_with_attributes_korrigiert.csv")
+activities_attributes_sarah$ts_POSIXct <-as.POSIXct(activities_attributes_sarah$ts_POSIXct)
 
+activities_attributes_sarah <-st_as_sf(activities_attributes_sarah,coords = c("lon","lat"), crs = 4326 , remove = FALSE) #anders herum reingelesen wegen lat lon Fehler
 
+activities_attributes_sarah <- st_transform(activities_attributes_sarah, crs = 2056)
 
-## Confusion matrix for test- data ----
-confus <-conf_mat(data = test_classification, truth = Attribute_factor, estimate = activity_factor)
+cama_class_sarah_test<-read_sf("CAMA_data/ cama_classification_results_saskia_training.gpkg")
 
-autoplot(confus, type="heatmap")+
+###Join data from CAMA and walking- attributes -----
+activities_sar_test<-st_join(activities_attributes_sarah,cama_class_sarah_test)
+
+activities_sar_test$Attribute_factor.x <-as.factor(activities_sar_test$Attribute_factor.x)
+
+pred_model_sar_test<- model_sas_train |>  
+  predict(activities_sar_test, type = "class")
+
+activities_sar_test$pred_test_sar <-pred_model_sar_test
+
+### Confusion matrix for Sarah's test- data  ---
+confus_sar_test <-conf_mat(data = activities_sar_test, truth = Attribute_factor.x, estimate = pred_test_sar)
+
+autoplot(confus_sar_test, type="heatmap")+
   scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
   theme(legend.position = "right")+
   labs(fill="frequency")
+
+### Compute model accuracy rate on Sarah's test data----
+mean(pred_model_sar_test == activities_sar_train$Attribute_factor.x)
+
+
+#Visualize confusion matrices ----
+#source:https://stackoverflow.com/questions/23891140/r-how-to-visualize-confusion-matrix-using-the-caret-package
