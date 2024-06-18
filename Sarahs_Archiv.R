@@ -166,3 +166,13 @@ test_classification <- activities_with_objects |>
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
                             if_else(recreation == TRUE, "recreation",
                                     if_else(oev == TRUE, "travel", NA),NA)))
+
+
+
+
+#Visualize confusion matrices ----
+#source:https://stackoverflow.com/questions/23891140/r-how-to-visualize-confusion-matrix-using-the-caret-package
+
+#CART analysis ----
+#http://www.sthda.com/english/articles/35-statistical-machine-learning-essentials/141-cart-model-decision-tree-essentials/#classification-trees 
+#and r book
