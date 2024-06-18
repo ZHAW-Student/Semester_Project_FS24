@@ -10,12 +10,11 @@ execute:
   message: false
 lang: en  # switch to "de" if you write your report in german
 bibliography: bibliography.bib
-toc: true
 ---
 
-```{r preprocessing}
+```{r preprocessing, results='hide', fig.keep='none'}
 #| code-summary: Preprocessing
-# load libraries
+# used libraries #### 
 library("XML")
 library("leaflet")
 library("sf")
@@ -27,33 +26,7 @@ library("trajr")
 library("yardstick")
 library("caret") 
 
-```
-
-## Abstract
-
-The main question this paper attempts to answer is whether it is possible to differentiate between the walking pattern from recreation, travel and shopping. Data is collected with the Strava App. Three approaches are developed, tested and evaluated. The first approach is a classification based on the attributes speed, step length and acceleration. The second approach is a classification based on the surroundings. The third approach is the development of a CART-tree that combines the attributes generated in the first approach and the context information from the second approach. We can conclude that the attribute-based classification is not able to cleanly separate travel and recreation. For shopping, there was no clear pattern to be found, as the GPS signal is most often lost in the building.
-
-## Introduction
-
-The aim of this paper is to test and compare different approaches to detect walking patterns. The different patterns that should be able to be distinguished are walking for recreational purposes, walking for commuting and shopping. The underlying idea is that the pattern of these walking types differs in their attributes and the environment that there are based in. It was already shown that a differentiation between transit and walking based on speed is possible [@kim_new_2012]. Also, outdoor walking activities are generally longer, more continuous and faster with the walking duration being the most important attribute for classification [@baroudi_classification_2024].\
-Based on walking data tracked with the Strava app, we want to answer the following research questions:\
-- How well it possible to derive the type of activity from movement data considering the attributes sinuosity, speed and visited locations?\
-- Which type of analytical approach performs best in differentiating between the different activities?\
-- Does the performance of the analytical concepts differ when applied on trajectories recorded by different people?\
-The three approaches used in this study are classification based on attributes of the trajectory, CAMA-analysis and classification based on CART tree. The approaches are described in detail in the chapter material and methods.
-
-## Material and Methods
-
-### Data
-
-Data was collected with the Strava App from March to June 2024. The training data for the development of the algorithms consists of 12 trajectories recorded by Saskia in March and April 2024. There are 13'636 attributed points. Additional data is collected by Saskia and Sarah in June 2024 to enable testing of the developed algorithms. Additional three trajectories recorded from Saskia in 2023 are used to test the algorithms. The algorithms are tested separately on the data of both of us. This allows us to draw a conclusion whether the algorithms are able to differentiate walking patterns from different people. The test data from Saskia consist of 6 trajectories and a total of 8'559 attributed points. The test data from Sarah consists of 9 trajectories and a total of 17'648 attributed points. 
-
-### Preparation
-
-The data exported from Strava has the format gpx. The single activities are read and written into a data frame. IDs and descriptions for recognition are assigned to the single activities. The activities are then combined to one data frame and turned into a spatial object, which is then exported for manual classification. In QGIS, every point is given either the attribute shopping, recreation or commuting. The points are selected by location using an Open Street Map basemap. The activities are then again imported, turned into a spatial object and reprojected to LV95.
-
-```{r Preparation-and-export-for-GIS, fig.keep = "none", message=FALSE}
-#| code-summary: Preparation
+# Preparation training data ####
 # read training activities
 myfiles <- list.files("activities/.", pattern = "*.gpx")
 
@@ -131,15 +104,8 @@ test_activities_sf <- df_to_sf(test_activities_df)
 
 # export sf object for setting attributes in GIS
 # export_test_activities <- st_write(test_activities_sf, "test_activities.shp")
-```
 
-### Attribute based classification
-
-For the attribute-based classification, the time-lag and distance between single locations are being calculated. These calculations are checked for outlines. As the time lag between two consecutive locations is mostly 1 s, all intervals bigger than 5 s are removed, as these are most likely a mistake. The same is true for the distance between two consecutive locations. All step length more than 5 m are removed. As attributes also depend on the spatial scale, the mean step is calculated using the two previous and two next distances. The speed is deducted from this mean step. The segmentation is done as described in @laube_how_2011. The threshold for moving is set to 1.5 m. This is based on the assumption that this equals around 3 - 4 steps, which can be interpreted as moving. Additionally, acceleration was calculated based on the calculated speed and time lag. After the calculation of the attributes per trajectories, a summary is done for each trajectory to find differences between activity types. Also, a summary over all activities is done to find differences between activity types. This information was used to set the thresholds. Based on the established differences, a classification is done. The classification is verified using a confusion matrix and its statistic output. The thresholds for classification are adapted until the best possible classification is reached.
-
-```{r attribute-based, fig.keep = "none", message=FALSE, results='hide'}
-#| code-summary: Attribute-based classification
-#| 
+# attribute-based classification for training data ####
 # import csv with attributes and convert to sf
 activities_classified <- read_delim("test_activities_attributiert.csv", ",")
 activities_classified_sf <- df_to_sf(activities_classified)
@@ -424,34 +390,11 @@ test_activities_classified <- st_join(activities_classified_sf, test_classificat
 
 # calculate confusion matrix to test classification
 confus <-conf_mat(data = test_activities_classified, truth = Attribute_factor, estimate = activity_factor)
-```
 
-## Results
-
-### Attribut based classification
-
-#### Test data
-
-Despite extensive testing and adapting of the thresholds, it was not possible to correctly classify all activities. Based on the attributes speed, step length and acceleration, activities were hard to distinguish. 49 points could not be classified and were removed before computing the confusion matrix. The overall accuracy with the test data is 59 %. Sensitivity is highest for the class travel (0.6), specificity is highest for the class shopping (0.97). Detection rate is highest for travel (0.54).
-
-```{r confusion matrix, message=FALSE, results='hide', fig.cap="Confusion matrix for the training data"}
-#| code-summary: confusion matrix test data
-# get statistics for confusion matrix
+# get statistics for confusion matrix 
 confusionMatrix(test_activities_classified$Attribute_factor, test_activities_classified$activity_factor)
 
-# plot confusion matrix for test data
-autoplot(confus, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
-  theme(legend.position = "right")+
-  labs(fill="frequency")
-```
-
-#### Activity data Saskia
-
-30 points could not be classified and were removed before computing the confusion matrix. The overall accuracy of the model for the activity data of Saskia is 33 %. Again, sensitivity is highest for travel (0.34), as well as the detection rate (0.33).
-
-```{r attribute-based classification Saskias data, fig.keep = "none", message=FALSE, results='hide'}
-#| code-summary: Attribute-based classification Saskias data
+# attribute-based classification Saskias data ####
 # read activities
 myfiles <- list.files("activities/activities_saskia.", pattern = "*.gpx")
 
@@ -632,26 +575,11 @@ saskia_activities_classified <- st_join(activities_saskia_attributed_sf, saskia_
 # generate confusion matrix for data
 confus <-conf_mat(data = saskia_activities_classified, truth = Attribute_factor, estimate = activity_factor)
 
-```
-
-```{r confusion matrix Saskias data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskias data"}
-#| code-summary: Confusion matrix for Saskias data
 # get statistics of confusion matrix
 confusionMatrix(saskia_activities_classified$Attribute_factor, saskia_activities_classified$activity_factor)
 
-# plot confusion matrix
-autoplot(confus, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
-  theme(legend.position = "right")+
-  labs(fill="frequency")
-```
+# attribute-based classification Sarahs data ####
 
-#### Activity data Sarah
-
-51 points could not be classified and were removed before computing the confusion matrix. For Sarahs activities, the accuracy of the model is 19 %. The sensitivity for recreation is highest (0.71), the detection rate is highest for travel (0.16).
-
-```{r attribute-based classification Sarahs data, fig.keep = "none", message=FALSE, results='hide'}
-#| code-summary: Attribute-based classification Sarahs data
 # import csv with attributes and convert to sf
 activities_sarah_attributed <- read_delim("activities_sarah_attributiert.csv", ",")
 activities_sarah_attributed_sf <- df_to_sf(activities_sarah_attributed)
@@ -788,14 +716,76 @@ sarah_activities_classified <- st_join(activities_sarah_attributed_sf, sarah_cla
 
 # calcualte confusion matrix
 confus <-conf_mat(data = sarah_activities_classified, truth = Attribute_factor, estimate = activity_factor)
-```
-
-```{r confusion matrix Sarahs data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarahs data"}
-#| code-summary: Confusion matrix Sarahs data
 
 # get statitics for confusion matrix
 confusionMatrix(sarah_activities_classified$Attribute_factor, sarah_activities_classified$activity_factor)
 
+```
+
+## Abstract
+
+The main question this paper attempts to answer is whether it is possible to differentiate between the walking pattern from recreation, travel and shopping. Data is collected with the Strava App. Three approaches are developed, tested and evaluated. The first approach is a classification based on the attributes speed, step length and acceleration. The second approach is a classification based on the surroundings. The third approach is the development of a CART-tree that combines the attributes generated in the first approach and the context information from the second approach. We can conclude that the attribute-based classification is not able to cleanly separate travel and recreation. For shopping, there was no clear pattern to be found, as the GPS signal is most often lost in the building.
+
+## Introduction
+
+The aim of this paper is to test and compare different approaches to detect walking patterns. The different patterns that should be able to be distinguished are walking for recreational purposes, walking for commuting and shopping. The underlying idea is that the pattern of these walking types differs in their attributes and the environment that there are based in. It was already shown that a differentiation between transit and walking based on speed is possible [@kim_new_2012]. Also, outdoor walking activities are generally longer, more continuous and faster with the walking duration being the most important attribute for classification [@baroudi_classification_2024].\
+Based on walking data tracked with the Strava app, we want to answer the following research questions:\
+- How well it possible to derive the type of activity from movement data considering the attributes sinuosity, speed and visited locations?\
+- Which type of analytical approach performs best in differentiating between the different activities?\
+- Does the performance of the analytical concepts differ when applied on trajectories recorded by different people?\
+The three approaches used in this study are classification based on attributes of the trajectory, CAMA-analysis and classification based on CART tree. The approaches are described in detail in the chapter material and methods.
+
+## Material and Methods
+
+### Data
+
+Data was collected with the Strava App from March to June 2024. The training data for the development of the algorithms consists of 12 trajectories recorded by Saskia in March and April 2024. There are 13'636 attributed points. Additional data is collected by Saskia and Sarah in June 2024 to enable testing of the developed algorithms. Additional three trajectories recorded from Saskia in 2023 are used to test the algorithms. The algorithms are tested separately on the data of both of us. This allows us to draw a conclusion whether the algorithms are able to differentiate walking patterns from different people. The test data from Saskia consist of 6 trajectories and a total of 8'559 attributed points. The test data from Sarah consists of 9 trajectories and a total of 17'648 attributed points. 
+
+### Preparation
+
+The data exported from Strava has the format gpx. The single activities are read and written into a data frame. IDs and descriptions for recognition are assigned to the single activities. The activities are then combined to one data frame and turned into a spatial object, which is then exported for manual classification. In QGIS, every point is given either the attribute shopping, recreation or commuting. The points are selected by location using an Open Street Map basemap. The activities are then again imported, turned into a spatial object and reprojected to LV95.
+
+
+### Attribute based classification
+
+For the attribute-based classification, the time-lag and distance between single locations are being calculated. These calculations are checked for outlines. As the time lag between two consecutive locations is mostly 1 s, all intervals bigger than 5 s are removed, as these are most likely a mistake. The same is true for the distance between two consecutive locations. All step length more than 5 m are removed. As attributes also depend on the spatial scale, the mean step is calculated using the two previous and two next distances. The speed is deducted from this mean step. The segmentation is done as described in @laube_how_2011. The threshold for moving is set to 1.5 m. This is based on the assumption that this equals around 3 - 4 steps, which can be interpreted as moving. Additionally, acceleration was calculated based on the calculated speed and time lag. After the calculation of the attributes per trajectories, a summary is done for each trajectory to find differences between activity types. Also, a summary over all activities is done to find differences between activity types. This information was used to set the thresholds. Based on the established differences, a classification is done. The classification is verified using a confusion matrix and its statistic output. The thresholds for classification are adapted until the best possible classification is reached.
+
+## Results
+
+### Attribut based classification
+
+#### Test data
+
+Despite extensive testing and adapting of the thresholds, it was not possible to correctly classify all activities. Based on the attributes speed, step length and acceleration, activities were hard to distinguish. 49 points could not be classified and were removed before computing the confusion matrix. The overall accuracy with the test data is 59 %. Sensitivity is highest for the class travel (0.6), specificity is highest for the class shopping (0.97). Detection rate is highest for travel (0.54).
+
+```{r confusion matrix, message=FALSE, results='hide', fig.cap="Confusion matrix for the training data"}
+#| code-summary: confusion matrix test data
+# plot confusion matrix for test data
+autoplot(confus, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
+```
+
+#### Activity data Saskia
+
+30 points could not be classified and were removed before computing the confusion matrix. The overall accuracy of the model for the activity data of Saskia is 33 %. Again, sensitivity is highest for travel (0.34), as well as the detection rate (0.33).
+
+```{r confusion matrix Saskias data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskias data"}
+#| code-summary: Confusion matrix for Saskias data
+# plot confusion matrix
+autoplot(confus, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
+```
+
+#### Activity data Sarah
+
+51 points could not be classified and were removed before computing the confusion matrix. For Sarahs activities, the accuracy of the model is 19 %. The sensitivity for recreation is highest (0.71), the detection rate is highest for travel (0.16).
+
+```{r confusion matrix Sarahs data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarahs data"}
+#| code-summary: Confusion matrix Sarahs data
 # plot confusion matrix
 autoplot(confus, type="heatmap")+
   scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
