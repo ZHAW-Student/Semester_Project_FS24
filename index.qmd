@@ -12,8 +12,8 @@ execute:
 lang: en  # switch to "de" if you write your report in german
 bibliography: bibliography.bib
 ---
-```{r preprocessing, results='hide', fig.keep='none'}
-#| code-summary: Preprocessing
+```{r preprocessing_attribute, results='hide', fig.keep='none'}
+#| code-summary: Preprocessing for Attribute based classification
 # used libraries #### 
 library("XML")
 library("leaflet")
@@ -30,6 +30,10 @@ library("png")
 library("DiagrammeRsvg")
 library("magrittr")
 library("rsvg")
+library("readr")
+library("dplyr")
+library("rpart")
+library("stringr")
 
 # Preprocessing ####
 # read training activities
@@ -224,7 +228,56 @@ activities_sarah_sf<-activities_sarah_sf |>
 # export_activities_sarah <- st_write(activities_sarah_sf, "activities_sarah.csv")
 ```
 
+```{r preprocessing_CAMA, results='hide', fig.keep='none', eval=FALSE}
+#| code-summary: Preprocessing CAMA based classification
+# We decide not to let this chunk run as it relies on the swissTLM3 dataset and therefore takes quite long to run. All outputs generated from those steps are included in the code chunk for the CAMA based classification
+
+##Prepare clip data----
+gemeindegrenzen <- read_sf("swissBOUNDARIES3D_1_5_LV95_LN02.gpkg","tlm_hoheitsgebiet")
+
+gemeindeselection <-gemeindegrenzen |>
+                  filter(name %in% c("Andelfingen","Bubendorf","Freienbach" 
+                                     ,"Kleinandelfingen","Liestal" ,"Neuhausen am
+                                     Rheinfall","Rapperswil-Jona","Regensdorf","
+                                     Rüti","St. Moritz","S-chanf","Wädenswil"
+                                     ,"Winterthur","Zuoz"))
+
+##Reading, clipping and exporting clipped layers----
+st_layers("SWISSTLM3D_2024_LV95_LN02.gpkg")#see all contents of geopackage
+
+################### Warning! This does take some time.  
+
+gebaeude <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bauten_gebaeude_footprint")
+gebaeude_selection<-st_intersection(gebaeude,gemeindeselection)
+rm(gebaeude)
+st_write(gebaeude_selection, dsn="CAMA_data/gebaeude_selection.gpkg")
+
+bodenbedeckung <- read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_bb_bodenbedeckung")
+bodenbedeckung_selection<-st_intersection(bodenbedeckung,gemeindeselection)
+rm(bodenbedeckung)
+st_write(bodenbedeckung_selection, dsn="CAMA_data/bodenbedeckung_selection.gpkg")
+
+nutzungsareal <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_areale_nutzungsareal")
+nutzungsareal_selection<-st_intersection(nutzungsareal,gemeindeselection)
+rm(nutzungsareal)
+st_write(nutzungsareal_selection, dsn="CAMA_data/nutzungsareal_selection.gpkg")
+
+strassen <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_strassen_strasse")
+strassen_selection<-st_intersection(strassen,gemeindeselection)
+rm(strassen)
+st_write(strassen_selection, dsn="CAMA_data/strassen_selection.gpkg")
+
+oev <-read_sf("SWISSTLM3D_2024_LV95_LN02.gpkg","tlm_oev_haltestelle")
+oev_selection<-st_intersection(oev,gemeindeselection)
+rm(oev)
+st_write(oev_selection, dsn="CAMA_data/oev_selection.gpkg")
+
+```
+
+
 ```{r attribute-based classification, results='hide', fig.keep='none'}
+#| code-summary: Attribute based classification
+
 # attribute-based classification for training data ####
 # import csv with attributes and convert to sf
 training_activities_attributed <- read_delim("test_activities_attributiert.csv", ",")
@@ -800,12 +853,11 @@ confusionMatrix(sarah_activities_classified$Attribute_factor, sarah_activities_c
 ```
 
 ```{r CAMA classification, results='hide', fig.keep='none'}
-library("yardstick")
+#| code-summary: CAMA based classification
 
 ```
 
 ```{r CART classification, results='hide', fig.keep='none'}
-library("caret")
 ```
 
 ```{r workflows}

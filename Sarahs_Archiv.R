@@ -176,3 +176,81 @@ test_classification <- activities_with_objects |>
 #CART analysis ----
 #http://www.sthda.com/english/articles/35-statistical-machine-learning-essentials/141-cart-model-decision-tree-essentials/#classification-trees 
 #and r book
+
+
+
+###Extract single trajectories----
+traj1 <- filter(test_classification, ID == "test_1")
+traj2 <- filter(test_classification, ID == "test_2")
+traj3 <- filter(test_classification, ID == "test_3")
+traj4 <- filter(test_classification, ID == "test_4")
+traj5 <- filter(test_classification, ID == "test_5")
+traj6 <- filter(test_classification, ID == "test_6")
+traj7 <- filter(test_classification, ID == "test_7")
+traj8 <- filter(test_classification, ID == "test_8")
+traj9 <- filter(test_classification, ID == "test_9")
+traj10 <- filter(test_classification, ID == "test_10")
+traj11 <- filter(test_classification, ID == "test_11")
+traj12 <- filter(test_classification, ID == "test_12")
+
+###Plot single trajectories with segmentation----
+traj_plot1 <- ggplot(traj1, aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot2 <- ggplot(traj2,  aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot3 <- ggplot(traj3, aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot4 <- ggplot(traj4,  aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot5 <- ggplot(traj5, aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot6 <- ggplot(traj6, aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot7 <- ggplot(traj7,  aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot8 <- ggplot(traj8,  aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction") 
+
+traj_plot9 <- ggplot(traj9,  aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot10 <- ggplot(traj10,   aes(lat, lon, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot11 <- ggplot(traj11,  aes(lat, lon, colour = activity))+
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot12 <- ggplot(traj12,  aes(lat, lon, colour = activity))+
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot1
+traj_plot2
+traj_plot3
+traj_plot4
+traj_plot5
+traj_plot6
+traj_plot7
+traj_plot8
+traj_plot9
+traj_plot10
+traj_plot11
+traj_plot12

@@ -11,7 +11,6 @@ library("yardstick")
 library("stringr")
 
 #Cama analysis ----
-
 ##Prepare clip data----
 gemeindegrenzen <- read_sf("swissBOUNDARIES3D_1_5_LV95_LN02.gpkg","tlm_hoheitsgebiet")
 
@@ -97,39 +96,33 @@ activities_classified_sf<-st_join(activities_classified_sf, bodenbuf,
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_boden= objektart)
-rm(bodenbuf)
 
 activities_classified_sf<-st_join(activities_classified_sf, nutzungsbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_nutzung= objektart)
-rm(nutzungsbuf)
 
 activities_classified_sf<-st_join(activities_classified_sf, strassenbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_strassen= objektart)
-rm(strassenbuf)
 
 activities_classified_sf<-st_join(activities_classified_sf, oevbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_oev= objektart)
-rm(oevbuf)
 
 activities_classified_sf<-st_join(activities_classified_sf, gebaeude_clip ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_geb= objektart)
-rm(gebaeude_clip)
 
 activities_classified_sf = subset(activities_classified_sf,
-                                  select = -c(uuid.x...9,uuid.y...11, uuid.x...13,
-                                  uuid.y...15,uuid ))
+                                  select = -c(uuid.x...9,uuid.y...11, uuid.x...13, uuid.y...15,uuid ))
 
 st_write(activities_classified_sf, dsn="CAMA_data/activities cama_objects.gpkg")
 
@@ -244,6 +237,7 @@ traj_plot10 <- ggplot(traj10,   aes(lat, lon, colour = activity)) +
 traj_plot11 <- ggplot(traj11,  aes(lat, lon, colour = activity))+
   geom_point(aes(shape=Attribut))+
   labs(shape="Truth", colour="Prediction")
+
 traj_plot12 <- ggplot(traj12,  aes(lat, lon, colour = activity))+
   geom_point(aes(shape=Attribut))+
   labs(shape="Truth", colour="Prediction")
@@ -277,32 +271,27 @@ activities_classified_sf<-st_join(activities_classified_sf, bodenbuf,
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_boden= objektart)
-rm(bodenbuf)
 
 activities_classified_sf<-st_join(activities_classified_sf, nutzungsbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_nutzung= objektart)
-rm(nutzungsbuf)
 
 activities_classified_sf<-st_join(activities_classified_sf, strassenbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_strassen= objektart)
-rm(strassenbuf)
 
 activities_classified_sf<-st_join(activities_classified_sf, oevbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_oev= objektart)
-rm(oevbuf)
 
 activities_classified_sf<-st_join(activities_classified_sf, gebaeude_clip ,
                                   join=st_within,left=TRUE, largest=TRUE)
-rm(gebaeude_clip)
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_geb= objektart)
@@ -418,32 +407,27 @@ activities_classified_sf<-st_join(activities_classified_sf, bodenbuf,
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_boden= objektart)
-rm(bodenbuf)
 
 activities_classified_sf<-st_join(activities_classified_sf, nutzungsbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_nutzung= objektart)
-rm(nutzungsbuf)
 
 activities_classified_sf<-st_join(activities_classified_sf, strassenbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_strassen= objektart)
-rm(strassenbuf)
 
 activities_classified_sf<-st_join(activities_classified_sf, oevbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_oev= objektart)
-rm(oevbuf)
 
 activities_classified_sf<-st_join(activities_classified_sf, gebaeude_clip ,
                                   join=st_within,left=TRUE, largest=TRUE)
-rm(gebaeude_clip)
 
 activities_classified_sf<-activities_classified_sf |> 
   rename(obj_geb= objektart)
@@ -613,7 +597,7 @@ text(model_sas_train, cex=0.8,use.n = TRUE, xpd = TRUE)
 
 ###See whether tree needs to be pruned ----
 model_sas_train$cptable
-plotcp(model_sas_train)#no pruning needed
+#plotcp(model_sas_train)#no pruning needed
 
 ###Make prediction on original data for confusion matrix----
 pred_model_sas_train<- predict(model_sas_train, type="class")
