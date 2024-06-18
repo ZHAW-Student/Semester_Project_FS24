@@ -185,39 +185,51 @@ traj12 <- filter(test_classification, ID == "test_12")
 ### plot single trajectories with segmentation----
 
 traj_plot1 <- ggplot(traj1, aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot2 <- ggplot(traj2,  aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot3 <- ggplot(traj3, aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot4 <- ggplot(traj4,  aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot5 <- ggplot(traj5, aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot6 <- ggplot(traj6, aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot7 <- ggplot(traj7,  aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot8 <- ggplot(traj8,  aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut)) 
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction") 
 
 traj_plot9 <- ggplot(traj9,  aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot10 <- ggplot(traj10,   aes(lat, lon, colour = activity)) +
-geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
-traj_plot11 <- ggplot(traj11,  aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))
-traj_plot12 <- ggplot(traj12,  aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+traj_plot11 <- ggplot(traj11,  aes(lat, lon, colour = activity))+
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+traj_plot12 <- ggplot(traj12,  aes(lat, lon, colour = activity))+
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot1
 traj_plot2
@@ -232,6 +244,136 @@ traj_plot10
 traj_plot11
 traj_plot12
 
+##Workflow with Saskia's test- data ----
+###read activity data  ----
+activities_classified_sf <-read_csv("CAMA_data/activities_saskia_attributiert.csv")
+activities_classified_sf$ts_POSIXct <-as.POSIXct(activities_classified_sf$ts_POSIXct)
+
+activities_classified_sf <-st_as_sf(activities_classified_sf ,coords = c("lon", "lat"), crs = 4326 , remove = FALSE) #anders herum reingelesen wegen lat lon Fehler
+
+activities_classified_sf <- st_transform(activities_classified_sf, crs = 2056)
+
+###Join with objects -----
+
+activities_classified_sf<-st_join(activities_classified_sf, bodenbuf, join=st_within,left=TRUE, largest=TRUE)
+
+activities_classified_sf<-activities_classified_sf |> 
+  rename(obj_boden= objektart)
+rm(bodenbuf)
+
+activities_classified_sf<-st_join(activities_classified_sf, nutzungsbuf , join=st_within,left=TRUE, largest=TRUE)
+
+activities_classified_sf<-activities_classified_sf |> 
+  rename(obj_nutzung= objektart)
+rm(nutzungsbuf)
+
+activities_classified_sf<-st_join(activities_classified_sf, strassenbuf , join=st_within,left=TRUE, largest=TRUE)
+
+activities_classified_sf<-activities_classified_sf |> 
+  rename(obj_strassen= objektart)
+rm(strassenbuf)
+
+activities_classified_sf<-st_join(activities_classified_sf, oevbuf , join=st_within,left=TRUE, largest=TRUE)
+
+activities_classified_sf<-activities_classified_sf |> 
+  rename(obj_oev= objektart)
+rm(oevbuf)
+
+activities_classified_sf<-st_join(activities_classified_sf, gebaeude_clip , join=st_within,left=TRUE, largest=TRUE)
+rm(gebaeude_clip)
+
+activities_classified_sf<-activities_classified_sf |> 
+  rename(obj_geb= objektart)
+
+activities_classified_sf = subset(activities_classified_sf, select = -c(fid,uuid.x...10,uuid.y...12, uuid.x...14,uuid.y...16,uuid))
+
+st_write(activities_classified_sf, dsn="CAMA_data/activities cama_objects_saskia_test.gpkg")
+
+###Reread object-data ----
+activities_with_objects<-read_sf("CAMA_data/activities cama_objects_saskia_test.gpkg")
+
+activities_with_objects$recreation_b <- if_else(is.na(activities_with_objects$obj_boden == TRUE) , FALSE, TRUE)
+
+activities_with_objects$recreation_n <- if_else(is.na(activities_with_objects$obj_nutzung == TRUE) , FALSE, TRUE)
+
+activities_with_objects$recreation_s <- if_else(is.na(activities_with_objects$obj_strassen == TRUE) , FALSE, TRUE)
+
+activities_with_objects<-activities_with_objects |> 
+  mutate(recreation = case_when(recreation_b == TRUE ~ "TRUE", recreation_n == TRUE ~ "TRUE", recreation_s == TRUE ~ "TRUE"))
+
+activities_with_objects$recreation[is.na(activities_with_objects$recreation)] <- "FALSE" 
+
+activities_with_objects$recreation<-as.logical(activities_with_objects$recreation)
+
+activities_with_objects$oev <- if_else(is.na(activities_with_objects$obj_oev== TRUE) , FALSE, TRUE)
+
+activities_with_objects$gebaeude <- if_else(is.na(activities_with_objects$obj_geb) == TRUE , FALSE, TRUE)    
+activities_with_objects<-activities_with_objects[,c(1:7,13,17:19)]
+
+###Classification ----
+classification <- activities_with_objects |> 
+  mutate(activity = if_else(gebaeude == TRUE, "shopping", 
+                            if_else(oev == TRUE, "travel",
+                                    if_else(recreation == TRUE, "recreation", "travel"),NA)))
+
+
+classification <- classification |> 
+  mutate(activity_factor = as.factor(activity)) 
+classification <-classification |> 
+  mutate(Attribute_factor = as.factor(Attribut))
+
+st_write(classification, dsn="CAMA_data/ cama_classification_results_saskia_test.gpkg")#export classification results
+
+###Confusion matrix ----
+classification<-na.omit(classification)
+confus <-conf_mat(data = classification, truth = Attribute_factor, estimate = activity_factor)
+
+autoplot(confus, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
+
+### extract single trajectories----
+traj1 <- filter(classification, ID == "saskia__1")
+traj2 <- filter(classification, ID == "saskia__2")
+traj3 <- filter(classification, ID == "saskia__3")
+traj4 <- filter(classification, ID == "saskia__4")
+traj5 <- filter(classification, ID == "saskia__5")
+traj6 <- filter(classification, ID == "saskia__6")
+
+### plot single trajectories with segmentation----
+
+traj_plot1 <- ggplot(traj1, aes( lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot2 <- ggplot(traj2,  aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot3 <- ggplot(traj3, aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot4 <- ggplot(traj4,  aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot5 <- ggplot(traj5, aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot6 <- ggplot(traj6, aes(lon, lat, colour = activity)) +
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
+traj_plot1
+traj_plot2
+traj_plot3
+traj_plot4
+traj_plot5
+traj_plot6
+
 ##Workflow with Sarah's test- data ----
 ###read activity data  ----
 activities_classified_sf <-read_sf("CAMA_data/activities_sarah_classified.gpkg")
@@ -239,7 +381,6 @@ activities_classified_sf <-read_sf("CAMA_data/activities_sarah_classified.gpkg")
 activities_classified_sf <- st_transform(activities_classified_sf, crs = 2056)
 
 ###Join with objects -----
-
 activities_classified_sf<-st_join(activities_classified_sf, bodenbuf, join=st_within,left=TRUE, largest=TRUE)
 
 activities_classified_sf<-activities_classified_sf |> 
@@ -335,39 +476,52 @@ traj12 <- filter(classification, ID == "sarah__12")
 ### plot single trajectories with segmentation----
 
 traj_plot1 <- ggplot(traj1, aes( lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot2 <- ggplot(traj2,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot3 <- ggplot(traj3, aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot4 <- ggplot(traj4,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot5 <- ggplot(traj5, aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot6 <- ggplot(traj6, aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot7 <- ggplot(traj7,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot8 <- ggplot(traj8,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut)) 
+  geom_point(aes(shape=Attribut)) +
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot9 <- ggplot(traj9,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot10 <- ggplot(traj10,   aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot11 <- ggplot(traj11,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
+
 traj_plot12 <- ggplot(traj12,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))
+  geom_point(aes(shape=Attribut))+
+  labs(shape="Truth", colour="Prediction")
 
 traj_plot1
 traj_plot2
