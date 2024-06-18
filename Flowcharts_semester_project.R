@@ -4,8 +4,8 @@ library(DiagrammeR)
 
 #Overall workflow ----
 grViz("digraph{
-graph [layout = dot]
-node [shape = rectangle, style = filled, rankdir = LR, fillcolor = white]
+graph [layout = dot, rankdir = LR]
+node [shape = rectangle, style = filled,  fillcolor = white]
 datatrain[label='training data Saskia', shape = folder, fillcolor = beige]
 datatestsas[label='test data Saskia', shape = folder, fillcolor = beige]
 datatestsar[label='test data Sarah', shape = folder, fillcolor = beige]
@@ -60,15 +60,15 @@ valwork -> {valtrain applyattr applycama applycart}
 grViz("digraph{
 graph [layout = dot]
 node [shape = rectangle, style = filled, fillcolor = white]
-travel[label='mean speed 1.7m/s - 4m/s and mean step 1.7m - 4m and mean acceleration < 0.003m^2']
+travel[label='mean speed 1.7m/s - 4m/s \\n mean step 1.7m - 4m \\n mean acceleration < 0.003m^2']
 travelyes[label='Yes']
 traveltra[label='Is travel']
 travelno[label='No']
-recr[label='mean speed 1.1m/s - 1.7m/s and mean step 1.2m - 1.7m and mean acceleration <0.003m^2']
+recr[label='mean speed 1.1m/s - 1.7m/s \\n mean step 1.2m - 1.7m \\n mean acceleration <0.003m^2']
 recryes[label='Yes']
 recrtra[label='Is recreation']
 recrno[label='No']
-shop[label='mean speed > 5m/s or < 1.1m/s and mean step > 5m or < 1.2 and mean acceleration >0.001m^2']
+shop[label='mean speed > 5m/s or < 1.1m/s \\n mean step > 5m or < 1.2 \\n mean acceleration >0.001m^2']
 shopyes[label='Yes']
 shopyesshop[label='Is shopping']
 shopno[label='No ']
