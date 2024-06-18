@@ -28,16 +28,6 @@ cartwork [label ='workflow CART \\n based classification', fillcolor = aliceblue
 join[label='join data from \\n previous workflows \\n from the training data']
 cart [label='create CART']
 
-valwork[label='validation workflow', fillcolor = aliceblue]
-valtrain[label='apply validation steps \\n on results from \\n training data']
-
-applyattr[label='use thresholds \\n from attribute based classification \\n on test data']
-applycama[label='use classification rules \\n from CAMA based classification \\n on test data']
-applycart[label='apply CART tree to test data']
-conf[label='create confusion matix']
-acc[label='derive accuracy of classification']
-
-
 {datatrain datatestsas datatestsar} ->classify
 classify -> {attribute camawork}
 attribute -> derattributes
@@ -55,14 +45,25 @@ camaclass -> validate
 cartwork -> join
 join -> cart
 cart -> validate
-
-valwork -> {valtrain applyattr applycama applycart}
-
-{valtrain applyattr applycama applycart} -> {conf acc}
-
-
 }")
 
+# Validation workflow ----
+grViz("digraph{
+graph [layout = dot]
+node [shape = rectangle, style = filled, rankdir = LR, fillcolor = white]
+
+valwork[label='validation workflow', fillcolor = aliceblue]
+valtrain[label='apply validation steps \\n on results from \\n training data']
+
+applyattr[label='use thresholds \\n from attribute based classification \\n on test data']
+applycama[label='use classification rules \\n from CAMA based classification \\n on test data']
+applycart[label='apply CART tree to test data']
+conf[label='create confusion matix']
+acc[label='derive accuracy of classification']
+
+valwork -> {valtrain applyattr applycama applycart}
+{valtrain applyattr applycama applycart} -> {conf acc}
+}")
 
 #Attribute based ----
 grViz("digraph{
