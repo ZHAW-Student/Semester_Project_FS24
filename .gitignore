@@ -3,3 +3,9 @@
 .RData
 .Ruserdata
 activities/
+*.csv
+*.gpkg
+*.shp
+*.prj
+*.dbf
+*.shx

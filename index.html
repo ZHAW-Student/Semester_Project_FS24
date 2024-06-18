@@ -692,146 +692,230 @@ div.csl-indent {
 <span id="cb1-563"><a href="#cb1-563" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(saskia_activities_classified<span class="sc">$</span>Attribute_factor, saskia_activities_classified<span class="sc">$</span>activity_factor)</span>
 <span id="cb1-564"><a href="#cb1-564" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-565"><a href="#cb1-565" aria-hidden="true" tabindex="-1"></a><span class="co"># attribute-based classification Sarahs data ####</span></span>
-<span id="cb1-566"><a href="#cb1-566" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-567"><a href="#cb1-567" aria-hidden="true" tabindex="-1"></a><span class="co"># import csv with attributes and convert to sf</span></span>
-<span id="cb1-568"><a href="#cb1-568" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">"activities_sarah_attributiert.csv"</span>, <span class="st">","</span>)</span>
-<span id="cb1-569"><a href="#cb1-569" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> <span class="fu">df_to_sf</span>(activities_sarah_attributed)</span>
-<span id="cb1-570"><a href="#cb1-570" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-571"><a href="#cb1-571" aria-hidden="true" tabindex="-1"></a><span class="co"># change crs of sf</span></span>
-<span id="cb1-572"><a href="#cb1-572" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(activities_sarah_attributed_sf, <span class="at">crs =</span> <span class="dv">2056</span>)</span>
-<span id="cb1-573"><a href="#cb1-573" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-574"><a href="#cb1-574" aria-hidden="true" tabindex="-1"></a><span class="co"># set attributes</span></span>
-<span id="cb1-575"><a href="#cb1-575" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
-<span id="cb1-576"><a href="#cb1-576" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb1-577"><a href="#cb1-577" aria-hidden="true" tabindex="-1"></a>    <span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(ts_POSIXct),</span>
-<span id="cb1-578"><a href="#cb1-578" aria-hidden="true" tabindex="-1"></a>    <span class="at">Attribute_factor =</span> <span class="fu">as.factor</span>(Attribut)</span>
-<span id="cb1-579"><a href="#cb1-579" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb1-580"><a href="#cb1-580" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-581"><a href="#cb1-581" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate time lag</span></span>
-<span id="cb1-582"><a href="#cb1-582" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
-<span id="cb1-583"><a href="#cb1-583" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
-<span id="cb1-584"><a href="#cb1-584" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb1-585"><a href="#cb1-585" aria-hidden="true" tabindex="-1"></a>    <span class="at">timelag_sec =</span> <span class="fu">difftime_secs</span>(<span class="fu">lead</span>(DateTime,), DateTime)</span>
-<span id="cb1-586"><a href="#cb1-586" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb1-587"><a href="#cb1-587" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-588"><a href="#cb1-588" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate distance between locations</span></span>
-<span id="cb1-589"><a href="#cb1-589" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
-<span id="cb1-590"><a href="#cb1-590" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
-<span id="cb1-591"><a href="#cb1-591" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb1-592"><a href="#cb1-592" aria-hidden="true" tabindex="-1"></a>    <span class="at">steplenght =</span> <span class="fu">distance_by_element</span>(<span class="fu">lag</span>(geometry), geometry)</span>
-<span id="cb1-593"><a href="#cb1-593" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb1-594"><a href="#cb1-594" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-595"><a href="#cb1-595" aria-hidden="true" tabindex="-1"></a><span class="co"># Check plausibility of calculated parameters</span></span>
-<span id="cb1-596"><a href="#cb1-596" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(activities_sarah_attributed_sf<span class="sc">$</span>timelag_sec)</span>
-<span id="cb1-597"><a href="#cb1-597" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(activities_sarah_attributed_sf<span class="sc">$</span>steplenght)</span>
-<span id="cb1-598"><a href="#cb1-598" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(activities_sarah_attributed_sf<span class="sc">$</span>timelag_sec)</span>
-<span id="cb1-599"><a href="#cb1-599" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(activities_sarah_attributed_sf<span class="sc">$</span>steplenght)</span>
-<span id="cb1-600"><a href="#cb1-600" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(activities_sarah_attributed_sf<span class="sc">$</span>timelag_sec)</span>
-<span id="cb1-601"><a href="#cb1-601" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(activities_sarah_attributed_sf<span class="sc">$</span>steplenght)</span>
-<span id="cb1-602"><a href="#cb1-602" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-603"><a href="#cb1-603" aria-hidden="true" tabindex="-1"></a><span class="co"># based on this check, all timelag &gt; 5 and steplenght &gt; 5</span></span>
-<span id="cb1-604"><a href="#cb1-604" aria-hidden="true" tabindex="-1"></a>outliers_timelag <span class="ot">&lt;-</span> <span class="fu">filter</span>(activities_sarah_attributed_sf, timelag_sec <span class="sc">&gt;=</span> <span class="dv">5</span>)</span>
-<span id="cb1-605"><a href="#cb1-605" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf[<span class="fu">which</span>(activities_sarah_attributed_sf<span class="sc">$</span>timelag_sec <span class="sc">&lt;=</span> <span class="dv">5</span>),]</span>
-<span id="cb1-606"><a href="#cb1-606" aria-hidden="true" tabindex="-1"></a>outliers_steplenght <span class="ot">&lt;-</span> <span class="fu">filter</span>(activities_sarah_attributed_sf, steplenght <span class="sc">&gt;=</span> <span class="dv">5</span>)</span>
-<span id="cb1-607"><a href="#cb1-607" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf[<span class="fu">which</span>(activities_sarah_attributed_sf<span class="sc">$</span>steplenght <span class="sc">&lt;=</span> <span class="dv">5</span>),]</span>
-<span id="cb1-608"><a href="#cb1-608" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-609"><a href="#cb1-609" aria-hidden="true" tabindex="-1"></a><span class="co"># plot again to make sure it's better</span></span>
-<span id="cb1-610"><a href="#cb1-610" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(activities_sarah_attributed_sf<span class="sc">$</span>timelag_sec)</span>
-<span id="cb1-611"><a href="#cb1-611" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(activities_sarah_attributed_sf<span class="sc">$</span>steplenght)</span>
-<span id="cb1-612"><a href="#cb1-612" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(activities_sarah_attributed_sf<span class="sc">$</span>timelag_sec)</span>
-<span id="cb1-613"><a href="#cb1-613" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(activities_sarah_attributed_sf<span class="sc">$</span>steplenght)</span>
-<span id="cb1-614"><a href="#cb1-614" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-615"><a href="#cb1-615" aria-hidden="true" tabindex="-1"></a><span class="co"># Segmentation</span></span>
-<span id="cb1-616"><a href="#cb1-616" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify a temporal window for mean step</span></span>
-<span id="cb1-617"><a href="#cb1-617" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
-<span id="cb1-618"><a href="#cb1-618" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
-<span id="cb1-619"><a href="#cb1-619" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb1-620"><a href="#cb1-620" aria-hidden="true" tabindex="-1"></a>    <span class="at">nMinus2 =</span> <span class="fu">distance_by_element</span>(<span class="fu">lag</span>(geometry, <span class="dv">2</span>), geometry),  </span>
-<span id="cb1-621"><a href="#cb1-621" aria-hidden="true" tabindex="-1"></a>    <span class="at">nMinus1 =</span> <span class="fu">distance_by_element</span>(<span class="fu">lag</span>(geometry, <span class="dv">1</span>), geometry),  </span>
-<span id="cb1-622"><a href="#cb1-622" aria-hidden="true" tabindex="-1"></a>    <span class="at">nPlus1  =</span> <span class="fu">distance_by_element</span>(geometry, <span class="fu">lead</span>(geometry, <span class="dv">1</span>)), </span>
-<span id="cb1-623"><a href="#cb1-623" aria-hidden="true" tabindex="-1"></a>    <span class="at">nPlus2  =</span> <span class="fu">distance_by_element</span>(geometry, <span class="fu">lead</span>(geometry, <span class="dv">2</span>))  </span>
-<span id="cb1-624"><a href="#cb1-624" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb1-625"><a href="#cb1-625" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate mean step</span></span>
-<span id="cb1-626"><a href="#cb1-626" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
-<span id="cb1-627"><a href="#cb1-627" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
-<span id="cb1-628"><a href="#cb1-628" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">|&gt;</span></span>
-<span id="cb1-629"><a href="#cb1-629" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb1-630"><a href="#cb1-630" aria-hidden="true" tabindex="-1"></a>    <span class="at">stepMean =</span> <span class="fu">mean</span>(<span class="fu">c</span>(nMinus2, nMinus1, nPlus1, nPlus2))</span>
-<span id="cb1-631"><a href="#cb1-631" aria-hidden="true" tabindex="-1"></a>  ) </span>
-<span id="cb1-632"><a href="#cb1-632" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-633"><a href="#cb1-633" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate mean speed</span></span>
-<span id="cb1-634"><a href="#cb1-634" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
-<span id="cb1-635"><a href="#cb1-635" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
-<span id="cb1-636"><a href="#cb1-636" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb1-637"><a href="#cb1-637" aria-hidden="true" tabindex="-1"></a>    <span class="at">speedMean =</span> stepMean<span class="sc">/</span>timelag_sec</span>
-<span id="cb1-638"><a href="#cb1-638" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb1-639"><a href="#cb1-639" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-640"><a href="#cb1-640" aria-hidden="true" tabindex="-1"></a><span class="co"># apply threshold defined in test data</span></span>
-<span id="cb1-641"><a href="#cb1-641" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
-<span id="cb1-642"><a href="#cb1-642" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
-<span id="cb1-643"><a href="#cb1-643" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">static =</span> stepMean <span class="sc">&lt;</span>  <span class="fl">1.5</span>)</span>
-<span id="cb1-644"><a href="#cb1-644" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-645"><a href="#cb1-645" aria-hidden="true" tabindex="-1"></a><span class="co"># give segments an ID</span></span>
-<span id="cb1-646"><a href="#cb1-646" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
-<span id="cb1-647"><a href="#cb1-647" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
-<span id="cb1-648"><a href="#cb1-648" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">segment_id =</span> <span class="fu">rle_id</span>(static)) <span class="sc">|&gt;</span> </span>
-<span id="cb1-649"><a href="#cb1-649" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb1-566"><a href="#cb1-566" aria-hidden="true" tabindex="-1"></a><span class="co"># read activities</span></span>
+<span id="cb1-567"><a href="#cb1-567" aria-hidden="true" tabindex="-1"></a>myfiles <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="st">"activities/activities_sarah"</span>, <span class="at">pattern =</span> <span class="st">"*.gpx"</span>)</span>
+<span id="cb1-568"><a href="#cb1-568" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-569"><a href="#cb1-569" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(myfiles)){</span>
+<span id="cb1-570"><a href="#cb1-570" aria-hidden="true" tabindex="-1"></a>  filename <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"sarah_"</span>, i)</span>
+<span id="cb1-571"><a href="#cb1-571" aria-hidden="true" tabindex="-1"></a>  wd <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"activities/activities_sarah/"</span>, myfiles[i])</span>
+<span id="cb1-572"><a href="#cb1-572" aria-hidden="true" tabindex="-1"></a>  <span class="fu">assign</span>(filename, <span class="fu">htmlTreeParse</span>(<span class="at">file =</span> wd, <span class="at">useInternalNodes =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb1-573"><a href="#cb1-573" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-574"><a href="#cb1-574" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-575"><a href="#cb1-575" aria-hidden="true" tabindex="-1"></a><span class="co"># function to parse activities and write into data frame</span></span>
+<span id="cb1-576"><a href="#cb1-576" aria-hidden="true" tabindex="-1"></a>built_df <span class="ot">&lt;-</span> <span class="cf">function</span>(activity) {</span>
+<span id="cb1-577"><a href="#cb1-577" aria-hidden="true" tabindex="-1"></a>  <span class="co"># get coordinates</span></span>
+<span id="cb1-578"><a href="#cb1-578" aria-hidden="true" tabindex="-1"></a>  coords <span class="ot">&lt;-</span> <span class="fu">xpathSApply</span>(<span class="at">doc =</span> activity, <span class="at">path =</span> <span class="st">"//trkpt"</span>, <span class="at">fun =</span> xmlAttrs)</span>
+<span id="cb1-579"><a href="#cb1-579" aria-hidden="true" tabindex="-1"></a>  <span class="co"># get elevation</span></span>
+<span id="cb1-580"><a href="#cb1-580" aria-hidden="true" tabindex="-1"></a>  elevation <span class="ot">&lt;-</span> <span class="fu">xpathSApply</span>(<span class="at">doc =</span> activity, <span class="at">path =</span> <span class="st">"//trkpt/ele"</span>, <span class="at">fun =</span> xmlValue)</span>
+<span id="cb1-581"><a href="#cb1-581" aria-hidden="true" tabindex="-1"></a>  <span class="co"># get time</span></span>
+<span id="cb1-582"><a href="#cb1-582" aria-hidden="true" tabindex="-1"></a>  time <span class="ot">&lt;-</span> <span class="fu">xpathApply</span>(<span class="at">doc =</span> activity, <span class="at">path =</span> <span class="st">"//trkpt/time"</span>, <span class="at">fun =</span> xmlValue)</span>
+<span id="cb1-583"><a href="#cb1-583" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb1-584"><a href="#cb1-584" aria-hidden="true" tabindex="-1"></a>    <span class="at">lat =</span> <span class="fu">as.numeric</span>(coords[<span class="st">"lat"</span>, ]),</span>
+<span id="cb1-585"><a href="#cb1-585" aria-hidden="true" tabindex="-1"></a>    <span class="at">lon =</span> <span class="fu">as.numeric</span>(coords[<span class="st">"lon"</span>, ]),</span>
+<span id="cb1-586"><a href="#cb1-586" aria-hidden="true" tabindex="-1"></a>    <span class="at">ts_POSIXct =</span> <span class="fu">ymd_hms</span>(time, <span class="at">tz =</span> <span class="st">"UTC"</span>),</span>
+<span id="cb1-587"><a href="#cb1-587" aria-hidden="true" tabindex="-1"></a>    <span class="at">elevation =</span> <span class="fu">as.numeric</span>(elevation)</span>
+<span id="cb1-588"><a href="#cb1-588" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-589"><a href="#cb1-589" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-590"><a href="#cb1-590" aria-hidden="true" tabindex="-1"></a><span class="co"># convert files to dataframe</span></span>
+<span id="cb1-591"><a href="#cb1-591" aria-hidden="true" tabindex="-1"></a>sarah_1_df <span class="ot">&lt;-</span> <span class="fu">built_df</span>(sarah_1)</span>
+<span id="cb1-592"><a href="#cb1-592" aria-hidden="true" tabindex="-1"></a>sarah_2_df <span class="ot">&lt;-</span> <span class="fu">built_df</span>(sarah_2)</span>
+<span id="cb1-593"><a href="#cb1-593" aria-hidden="true" tabindex="-1"></a>sarah_3_df <span class="ot">&lt;-</span> <span class="fu">built_df</span>(sarah_3)</span>
+<span id="cb1-594"><a href="#cb1-594" aria-hidden="true" tabindex="-1"></a>sarah_4_df <span class="ot">&lt;-</span> <span class="fu">built_df</span>(sarah_4)</span>
+<span id="cb1-595"><a href="#cb1-595" aria-hidden="true" tabindex="-1"></a>sarah_5_df <span class="ot">&lt;-</span> <span class="fu">built_df</span>(sarah_5)</span>
+<span id="cb1-596"><a href="#cb1-596" aria-hidden="true" tabindex="-1"></a>sarah_6_df <span class="ot">&lt;-</span> <span class="fu">built_df</span>(sarah_6)</span>
+<span id="cb1-597"><a href="#cb1-597" aria-hidden="true" tabindex="-1"></a>sarah_7_df <span class="ot">&lt;-</span> <span class="fu">built_df</span>(sarah_7)</span>
+<span id="cb1-598"><a href="#cb1-598" aria-hidden="true" tabindex="-1"></a>sarah_8_df <span class="ot">&lt;-</span> <span class="fu">built_df</span>(sarah_8)</span>
+<span id="cb1-599"><a href="#cb1-599" aria-hidden="true" tabindex="-1"></a>sarah_9_df <span class="ot">&lt;-</span> <span class="fu">built_df</span>(sarah_9)</span>
+<span id="cb1-600"><a href="#cb1-600" aria-hidden="true" tabindex="-1"></a>sarah_10_df <span class="ot">&lt;-</span> <span class="fu">built_df</span>(sarah_10)</span>
+<span id="cb1-601"><a href="#cb1-601" aria-hidden="true" tabindex="-1"></a>sarah_11_df <span class="ot">&lt;-</span> <span class="fu">built_df</span>(sarah_11)</span>
+<span id="cb1-602"><a href="#cb1-602" aria-hidden="true" tabindex="-1"></a>sarah_12_df <span class="ot">&lt;-</span> <span class="fu">built_df</span>(sarah_12)</span>
+<span id="cb1-603"><a href="#cb1-603" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-604"><a href="#cb1-604" aria-hidden="true" tabindex="-1"></a><span class="co"># assign ID to single files</span></span>
+<span id="cb1-605"><a href="#cb1-605" aria-hidden="true" tabindex="-1"></a>sarah_1_df<span class="sc">$</span>ID <span class="ot">&lt;-</span> <span class="st">"sarah__1"</span></span>
+<span id="cb1-606"><a href="#cb1-606" aria-hidden="true" tabindex="-1"></a>sarah_1_df<span class="sc">$</span>ID_text <span class="ot">&lt;-</span> <span class="st">"sarah_Denner_Einkauf"</span></span>
+<span id="cb1-607"><a href="#cb1-607" aria-hidden="true" tabindex="-1"></a>sarah_2_df<span class="sc">$</span>ID <span class="ot">&lt;-</span> <span class="st">"sarah__2"</span></span>
+<span id="cb1-608"><a href="#cb1-608" aria-hidden="true" tabindex="-1"></a>sarah_2_df<span class="sc">$</span>ID_text <span class="ot">&lt;-</span> <span class="st">"sarah_Klafi_Feld"</span></span>
+<span id="cb1-609"><a href="#cb1-609" aria-hidden="true" tabindex="-1"></a>sarah_3_df<span class="sc">$</span>ID <span class="ot">&lt;-</span> <span class="st">"sarah__3"</span></span>
+<span id="cb1-610"><a href="#cb1-610" aria-hidden="true" tabindex="-1"></a>sarah_3_df<span class="sc">$</span>ID_text <span class="ot">&lt;-</span> <span class="st">"sarah_Klafi_von_Zug_Heim"</span></span>
+<span id="cb1-611"><a href="#cb1-611" aria-hidden="true" tabindex="-1"></a>sarah_4_df<span class="sc">$</span>ID <span class="ot">&lt;-</span> <span class="st">"sarah__4"</span></span>
+<span id="cb1-612"><a href="#cb1-612" aria-hidden="true" tabindex="-1"></a>sarah_4_df<span class="sc">$</span>ID_text <span class="ot">&lt;-</span> <span class="st">"sarah_Migros_groesserer_Einkauf"</span></span>
+<span id="cb1-613"><a href="#cb1-613" aria-hidden="true" tabindex="-1"></a>sarah_5_df<span class="sc">$</span>ID <span class="ot">&lt;-</span> <span class="st">"sarah__5"</span></span>
+<span id="cb1-614"><a href="#cb1-614" aria-hidden="true" tabindex="-1"></a>sarah_5_df<span class="sc">$</span>ID_text <span class="ot">&lt;-</span> <span class="st">"sarah_Migros_kleiner_Einkauf"</span></span>
+<span id="cb1-615"><a href="#cb1-615" aria-hidden="true" tabindex="-1"></a>sarah_6_df<span class="sc">$</span>ID <span class="ot">&lt;-</span> <span class="st">"sarah__6"</span></span>
+<span id="cb1-616"><a href="#cb1-616" aria-hidden="true" tabindex="-1"></a>sarah_6_df<span class="sc">$</span>ID_text <span class="ot">&lt;-</span> <span class="st">"sarah_Rosengarten_und_Shopping_Winti"</span></span>
+<span id="cb1-617"><a href="#cb1-617" aria-hidden="true" tabindex="-1"></a>sarah_7_df<span class="sc">$</span>ID <span class="ot">&lt;-</span> <span class="st">"sarah__7"</span></span>
+<span id="cb1-618"><a href="#cb1-618" aria-hidden="true" tabindex="-1"></a>sarah_7_df<span class="sc">$</span>ID_text <span class="ot">&lt;-</span> <span class="st">"sarah_Spaziergang_am_Morgen_Bub"</span></span>
+<span id="cb1-619"><a href="#cb1-619" aria-hidden="true" tabindex="-1"></a>sarah_8_df<span class="sc">$</span>ID <span class="ot">&lt;-</span> <span class="st">"sarah__8"</span></span>
+<span id="cb1-620"><a href="#cb1-620" aria-hidden="true" tabindex="-1"></a>sarah_8_df<span class="sc">$</span>ID_text <span class="ot">&lt;-</span> <span class="st">"sarah_Spaziergang_Klafi_kleine_Runde"</span></span>
+<span id="cb1-621"><a href="#cb1-621" aria-hidden="true" tabindex="-1"></a>sarah_9_df<span class="sc">$</span>ID <span class="ot">&lt;-</span> <span class="st">"sarah__9"</span></span>
+<span id="cb1-622"><a href="#cb1-622" aria-hidden="true" tabindex="-1"></a>sarah_9_df<span class="sc">$</span>ID_text <span class="ot">&lt;-</span> <span class="st">"sarah_WB_Heim"</span></span>
+<span id="cb1-623"><a href="#cb1-623" aria-hidden="true" tabindex="-1"></a>sarah_10_df<span class="sc">$</span>ID <span class="ot">&lt;-</span> <span class="st">"sarah__10"</span></span>
+<span id="cb1-624"><a href="#cb1-624" aria-hidden="true" tabindex="-1"></a>sarah_10_df<span class="sc">$</span>ID_text <span class="ot">&lt;-</span> <span class="st">"sarah_Zu_Bus_Klafi"</span></span>
+<span id="cb1-625"><a href="#cb1-625" aria-hidden="true" tabindex="-1"></a>sarah_11_df<span class="sc">$</span>ID <span class="ot">&lt;-</span> <span class="st">"sarah__11"</span></span>
+<span id="cb1-626"><a href="#cb1-626" aria-hidden="true" tabindex="-1"></a>sarah_11_df<span class="sc">$</span>ID_text <span class="ot">&lt;-</span> <span class="st">"sarah_Zum_Bus_Bub"</span></span>
+<span id="cb1-627"><a href="#cb1-627" aria-hidden="true" tabindex="-1"></a>sarah_12_df<span class="sc">$</span>ID <span class="ot">&lt;-</span> <span class="st">"sarah__12"</span></span>
+<span id="cb1-628"><a href="#cb1-628" aria-hidden="true" tabindex="-1"></a>sarah_12_df<span class="sc">$</span>ID_text <span class="ot">&lt;-</span> <span class="st">"sarah_Zum_Zug_Liestal"</span></span>
+<span id="cb1-629"><a href="#cb1-629" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-630"><a href="#cb1-630" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-631"><a href="#cb1-631" aria-hidden="true" tabindex="-1"></a><span class="co"># function to convert df into sf object</span></span>
+<span id="cb1-632"><a href="#cb1-632" aria-hidden="true" tabindex="-1"></a>df_to_sf <span class="ot">&lt;-</span> <span class="cf">function</span>(df){</span>
+<span id="cb1-633"><a href="#cb1-633" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(df, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"lon"</span>, <span class="st">"lat"</span>), <span class="at">crs =</span> <span class="dv">4326</span> , <span class="at">remove =</span> <span class="cn">FALSE</span>)}</span>
+<span id="cb1-634"><a href="#cb1-634" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-635"><a href="#cb1-635" aria-hidden="true" tabindex="-1"></a><span class="co"># combine all activitites to one data frame</span></span>
+<span id="cb1-636"><a href="#cb1-636" aria-hidden="true" tabindex="-1"></a>activities_sarah_df <span class="ot">&lt;-</span> <span class="fu">rbind</span>(sarah_1_df, sarah_2_df, sarah_3_df, sarah_4_df, sarah_5_df, sarah_6_df,sarah_7_df,sarah_8_df,sarah_9_df, sarah_10_df, sarah_11_df,sarah_12_df)</span>
+<span id="cb1-637"><a href="#cb1-637" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-638"><a href="#cb1-638" aria-hidden="true" tabindex="-1"></a><span class="co"># turn data frame into sf object</span></span>
+<span id="cb1-639"><a href="#cb1-639" aria-hidden="true" tabindex="-1"></a>activities_sarah_sf <span class="ot">&lt;-</span> <span class="fu">df_to_sf</span>(activities_sarah_df)</span>
+<span id="cb1-640"><a href="#cb1-640" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-641"><a href="#cb1-641" aria-hidden="true" tabindex="-1"></a><span class="co">#create new row for activity- classification and classify trajectories with only one activity</span></span>
+<span id="cb1-642"><a href="#cb1-642" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-643"><a href="#cb1-643" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-644"><a href="#cb1-644" aria-hidden="true" tabindex="-1"></a>activities_sarah_sf<span class="ot">&lt;-</span>activities_sarah_sf <span class="sc">|&gt;</span> </span>
+<span id="cb1-645"><a href="#cb1-645" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Attribut =</span> <span class="fu">case_when</span>(ID_text <span class="sc">==</span> <span class="st">"sarah_Denner_Einkauf"</span> <span class="sc">~</span> <span class="st">"recreation"</span>, ID_text <span class="sc">==</span> <span class="st">"sarah_Spaziergang_am_Morgen_Bub"</span><span class="sc">~</span> <span class="st">"recreation"</span>,ID_text <span class="sc">==</span> <span class="st">"sarah_Spaziergang_Klafi_kleine_Runde"</span>  <span class="sc">~</span> <span class="st">"recreation"</span>, ID_text <span class="sc">==</span> <span class="st">"sarah_Klafi_von_Zug_Heim"</span>  <span class="sc">~</span> <span class="st">"travel"</span>,ID_text <span class="sc">==</span> <span class="st">"sarah_WB_Heim"</span><span class="sc">~</span> <span class="st">"travel"</span> ,ID_text <span class="sc">==</span> <span class="st">"sarah_Zu_Bus_Klafi"</span><span class="sc">~</span> <span class="st">"travel"</span>,ID_text <span class="sc">==</span> <span class="st">"sarah_Zum_Bus_Bub"</span><span class="sc">~</span> <span class="st">"travel"</span>,ID_text <span class="sc">==</span> <span class="st">"sarah_Zum_Zug_Liestal"</span><span class="sc">~</span> <span class="st">"travel"</span>,ID_text <span class="sc">==</span> <span class="st">"sarah_Klafi_Feld"</span><span class="sc">~</span> <span class="st">"recreation"</span> ,ID_text <span class="sc">==</span> <span class="st">"sarah_Migros_groesserer_Einkauf"</span><span class="sc">~</span> <span class="st">"recreation"</span>,ID_text <span class="sc">==</span> <span class="st">"sarah_Migros_kleiner_Einkauf"</span><span class="sc">~</span> <span class="st">"recreation"</span> ,ID_text <span class="sc">==</span> <span class="st">"sarah_Rosengarten_und_Shopping_Winti"</span><span class="sc">~</span> <span class="st">"recreation"</span>  ))</span>
+<span id="cb1-646"><a href="#cb1-646" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-647"><a href="#cb1-647" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-648"><a href="#cb1-648" aria-hidden="true" tabindex="-1"></a><span class="co"># export sf object for setting attributes in GIS</span></span>
+<span id="cb1-649"><a href="#cb1-649" aria-hidden="true" tabindex="-1"></a>export_activities_sarah <span class="ot">&lt;-</span> <span class="fu">st_write</span>(activities_sarah_sf, <span class="st">"activities_sarah.csv"</span>)</span>
 <span id="cb1-650"><a href="#cb1-650" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-651"><a href="#cb1-651" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate acceleration ####</span></span>
-<span id="cb1-652"><a href="#cb1-652" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
-<span id="cb1-653"><a href="#cb1-653" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">acceleration =</span> </span>
-<span id="cb1-654"><a href="#cb1-654" aria-hidden="true" tabindex="-1"></a>           <span class="fu">acceleration</span>(<span class="fu">lag</span>(speedMean), speedMean, timelag_sec))</span>
-<span id="cb1-655"><a href="#cb1-655" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-656"><a href="#cb1-656" aria-hidden="true" tabindex="-1"></a><span class="co"># create new id to group for classification</span></span>
-<span id="cb1-657"><a href="#cb1-657" aria-hidden="true" tabindex="-1"></a>activities_sarah_for_classification <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
-<span id="cb1-658"><a href="#cb1-658" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">combi_ID =</span> <span class="fu">paste</span>(ID, segment_id, <span class="at">sep =</span> <span class="st">"_"</span>))</span>
-<span id="cb1-659"><a href="#cb1-659" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-660"><a href="#cb1-660" aria-hidden="true" tabindex="-1"></a><span class="co"># group by newly set id</span></span>
-<span id="cb1-661"><a href="#cb1-661" aria-hidden="true" tabindex="-1"></a>sarah_classification <span class="ot">&lt;-</span> activities_sarah_for_classification <span class="sc">|&gt;</span> </span>
-<span id="cb1-662"><a href="#cb1-662" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(combi_ID) <span class="sc">|&gt;</span> </span>
-<span id="cb1-663"><a href="#cb1-663" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean_acceleration =</span> <span class="fu">mean</span>(acceleration, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb1-664"><a href="#cb1-664" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean_speed =</span> <span class="fu">mean</span>(speedMean, <span class="at">na.rm =</span><span class="cn">TRUE</span>),</span>
-<span id="cb1-665"><a href="#cb1-665" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean_step =</span> <span class="fu">mean</span>(stepMean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb1-666"><a href="#cb1-666" aria-hidden="true" tabindex="-1"></a>            <span class="at">lenght =</span> <span class="fu">length</span>(segment_id)</span>
-<span id="cb1-667"><a href="#cb1-667" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb1-668"><a href="#cb1-668" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
-<span id="cb1-669"><a href="#cb1-669" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-670"><a href="#cb1-670" aria-hidden="true" tabindex="-1"></a><span class="co"># apply defined thresholds</span></span>
-<span id="cb1-671"><a href="#cb1-671" aria-hidden="true" tabindex="-1"></a>sarah_classification <span class="ot">&lt;-</span> sarah_classification <span class="sc">|&gt;</span> </span>
-<span id="cb1-672"><a href="#cb1-672" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">travel =</span> <span class="fu">if_else</span>(mean_speed <span class="sc">&gt;</span> <span class="fl">1.7</span> <span class="sc">&amp;</span> mean_speed <span class="sc">&lt;</span> <span class="dv">4</span></span>
-<span id="cb1-673"><a href="#cb1-673" aria-hidden="true" tabindex="-1"></a>                          <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="fl">1.7</span> <span class="sc">&amp;</span> mean_step <span class="sc">&lt;</span> <span class="dv">4</span></span>
-<span id="cb1-674"><a href="#cb1-674" aria-hidden="true" tabindex="-1"></a>                          <span class="sc">&amp;</span> mean_acceleration <span class="sc">&lt;</span> <span class="fl">0.003</span>,  <span class="dv">1</span> ,  <span class="dv">0</span> ),</span>
-<span id="cb1-675"><a href="#cb1-675" aria-hidden="true" tabindex="-1"></a>         <span class="at">recreation =</span> <span class="fu">if_else</span>(travel <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> ) </span>
-<span id="cb1-676"><a href="#cb1-676" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_speed <span class="sc">&gt;</span> <span class="fl">1.1</span>  <span class="sc">&amp;</span> mean_speed <span class="sc">&lt;</span> <span class="fl">1.7</span></span>
-<span id="cb1-677"><a href="#cb1-677" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="fl">1.2</span> <span class="sc">&amp;</span> mean_step <span class="sc">&lt;</span> <span class="fl">1.7</span></span>
-<span id="cb1-678"><a href="#cb1-678" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_acceleration <span class="sc">&lt;</span> <span class="fl">0.003</span>,  <span class="dv">1</span> ,  <span class="dv">0</span> ),</span>
-<span id="cb1-679"><a href="#cb1-679" aria-hidden="true" tabindex="-1"></a>         <span class="at">shopping =</span> <span class="fu">if_else</span>(travel <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> ) </span>
-<span id="cb1-680"><a href="#cb1-680" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> recreation <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> )</span>
-<span id="cb1-681"><a href="#cb1-681" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_speed <span class="sc">&gt;</span> <span class="dv">5</span> <span class="sc">|</span>  mean_speed <span class="sc">&lt;</span> <span class="fl">1.1</span></span>
-<span id="cb1-682"><a href="#cb1-682" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="dv">5</span> <span class="sc">|</span> mean_step <span class="sc">&lt;</span> <span class="fl">1.2</span></span>
-<span id="cb1-683"><a href="#cb1-683" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_acceleration <span class="sc">&gt;</span> <span class="fl">0.01</span></span>
-<span id="cb1-684"><a href="#cb1-684" aria-hidden="true" tabindex="-1"></a>                            ,  <span class="dv">1</span> ,  <span class="dv">0</span> ))</span>
-<span id="cb1-685"><a href="#cb1-685" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-686"><a href="#cb1-686" aria-hidden="true" tabindex="-1"></a><span class="co"># get attribute activity as text</span></span>
-<span id="cb1-687"><a href="#cb1-687" aria-hidden="true" tabindex="-1"></a>sarah_classification <span class="ot">&lt;-</span> sarah_classification <span class="sc">|&gt;</span> </span>
-<span id="cb1-688"><a href="#cb1-688" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">activity =</span> <span class="fu">if_else</span>(shopping <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"shopping"</span>, </span>
-<span id="cb1-689"><a href="#cb1-689" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">if_else</span>(recreation <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"recreation"</span>, <span class="st">"travel"</span>),<span class="st">"NA"</span>))</span>
-<span id="cb1-690"><a href="#cb1-690" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-691"><a href="#cb1-691" aria-hidden="true" tabindex="-1"></a><span class="co"># remove points that could not be classified</span></span>
-<span id="cb1-692"><a href="#cb1-692" aria-hidden="true" tabindex="-1"></a>sarah_classification <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(sarah_classification)</span>
-<span id="cb1-693"><a href="#cb1-693" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-694"><a href="#cb1-694" aria-hidden="true" tabindex="-1"></a><span class="co"># set classified activity as factor</span></span>
-<span id="cb1-695"><a href="#cb1-695" aria-hidden="true" tabindex="-1"></a>sarah_classification <span class="ot">&lt;-</span> sarah_classification <span class="sc">|&gt;</span> </span>
-<span id="cb1-696"><a href="#cb1-696" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">activity_factor =</span> <span class="fu">as.factor</span>(activity)) </span>
-<span id="cb1-697"><a href="#cb1-697" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-698"><a href="#cb1-698" aria-hidden="true" tabindex="-1"></a><span class="co"># join classification table with sf object</span></span>
-<span id="cb1-699"><a href="#cb1-699" aria-hidden="true" tabindex="-1"></a>sarah_activities_classified <span class="ot">&lt;-</span> <span class="fu">st_join</span>(activities_sarah_attributed_sf, sarah_classification, <span class="at">left =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-700"><a href="#cb1-700" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-701"><a href="#cb1-701" aria-hidden="true" tabindex="-1"></a><span class="co"># calcualte confusion matrix</span></span>
-<span id="cb1-702"><a href="#cb1-702" aria-hidden="true" tabindex="-1"></a>confus <span class="ot">&lt;-</span><span class="fu">conf_mat</span>(<span class="at">data =</span> sarah_activities_classified, <span class="at">truth =</span> Attribute_factor, <span class="at">estimate =</span> activity_factor)</span>
-<span id="cb1-703"><a href="#cb1-703" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-704"><a href="#cb1-704" aria-hidden="true" tabindex="-1"></a><span class="co"># get statitics for confusion matrix</span></span>
-<span id="cb1-705"><a href="#cb1-705" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(sarah_activities_classified<span class="sc">$</span>Attribute_factor, sarah_activities_classified<span class="sc">$</span>activity_factor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-651"><a href="#cb1-651" aria-hidden="true" tabindex="-1"></a><span class="co"># import csv with attributes and convert to sf</span></span>
+<span id="cb1-652"><a href="#cb1-652" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">"activities_sarah_attributiert.csv"</span>, <span class="st">","</span>)</span>
+<span id="cb1-653"><a href="#cb1-653" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> <span class="fu">df_to_sf</span>(activities_sarah_attributed)</span>
+<span id="cb1-654"><a href="#cb1-654" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-655"><a href="#cb1-655" aria-hidden="true" tabindex="-1"></a><span class="co"># change crs of sf</span></span>
+<span id="cb1-656"><a href="#cb1-656" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(activities_sarah_attributed_sf, <span class="at">crs =</span> <span class="dv">2056</span>)</span>
+<span id="cb1-657"><a href="#cb1-657" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-658"><a href="#cb1-658" aria-hidden="true" tabindex="-1"></a><span class="co"># set attributes</span></span>
+<span id="cb1-659"><a href="#cb1-659" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
+<span id="cb1-660"><a href="#cb1-660" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-661"><a href="#cb1-661" aria-hidden="true" tabindex="-1"></a>    <span class="at">DateTime =</span> <span class="fu">as.POSIXct</span>(ts_POSIXct),</span>
+<span id="cb1-662"><a href="#cb1-662" aria-hidden="true" tabindex="-1"></a>    <span class="at">Attribute_factor =</span> <span class="fu">as.factor</span>(Attribut)</span>
+<span id="cb1-663"><a href="#cb1-663" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-664"><a href="#cb1-664" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-665"><a href="#cb1-665" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate time lag</span></span>
+<span id="cb1-666"><a href="#cb1-666" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
+<span id="cb1-667"><a href="#cb1-667" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
+<span id="cb1-668"><a href="#cb1-668" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-669"><a href="#cb1-669" aria-hidden="true" tabindex="-1"></a>    <span class="at">timelag_sec =</span> <span class="fu">difftime_secs</span>(<span class="fu">lead</span>(DateTime,), DateTime)</span>
+<span id="cb1-670"><a href="#cb1-670" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-671"><a href="#cb1-671" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-672"><a href="#cb1-672" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate distance between locations</span></span>
+<span id="cb1-673"><a href="#cb1-673" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
+<span id="cb1-674"><a href="#cb1-674" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
+<span id="cb1-675"><a href="#cb1-675" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-676"><a href="#cb1-676" aria-hidden="true" tabindex="-1"></a>    <span class="at">steplenght =</span> <span class="fu">distance_by_element</span>(<span class="fu">lag</span>(geometry), geometry)</span>
+<span id="cb1-677"><a href="#cb1-677" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-678"><a href="#cb1-678" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-679"><a href="#cb1-679" aria-hidden="true" tabindex="-1"></a><span class="co"># Check plausibility of calculated parameters</span></span>
+<span id="cb1-680"><a href="#cb1-680" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(activities_sarah_attributed_sf<span class="sc">$</span>timelag_sec)</span>
+<span id="cb1-681"><a href="#cb1-681" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(activities_sarah_attributed_sf<span class="sc">$</span>steplenght)</span>
+<span id="cb1-682"><a href="#cb1-682" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(activities_sarah_attributed_sf<span class="sc">$</span>timelag_sec)</span>
+<span id="cb1-683"><a href="#cb1-683" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(activities_sarah_attributed_sf<span class="sc">$</span>steplenght)</span>
+<span id="cb1-684"><a href="#cb1-684" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(activities_sarah_attributed_sf<span class="sc">$</span>timelag_sec)</span>
+<span id="cb1-685"><a href="#cb1-685" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(activities_sarah_attributed_sf<span class="sc">$</span>steplenght)</span>
+<span id="cb1-686"><a href="#cb1-686" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-687"><a href="#cb1-687" aria-hidden="true" tabindex="-1"></a><span class="co"># based on this check, all timelag &gt; 5 and steplenght &gt; 5</span></span>
+<span id="cb1-688"><a href="#cb1-688" aria-hidden="true" tabindex="-1"></a>outliers_timelag <span class="ot">&lt;-</span> <span class="fu">filter</span>(activities_sarah_attributed_sf, timelag_sec <span class="sc">&gt;=</span> <span class="dv">5</span>)</span>
+<span id="cb1-689"><a href="#cb1-689" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf[<span class="fu">which</span>(activities_sarah_attributed_sf<span class="sc">$</span>timelag_sec <span class="sc">&lt;=</span> <span class="dv">5</span>),]</span>
+<span id="cb1-690"><a href="#cb1-690" aria-hidden="true" tabindex="-1"></a>outliers_steplenght <span class="ot">&lt;-</span> <span class="fu">filter</span>(activities_sarah_attributed_sf, steplenght <span class="sc">&gt;=</span> <span class="dv">5</span>)</span>
+<span id="cb1-691"><a href="#cb1-691" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf[<span class="fu">which</span>(activities_sarah_attributed_sf<span class="sc">$</span>steplenght <span class="sc">&lt;=</span> <span class="dv">5</span>),]</span>
+<span id="cb1-692"><a href="#cb1-692" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-693"><a href="#cb1-693" aria-hidden="true" tabindex="-1"></a><span class="co"># plot again to make sure it's better</span></span>
+<span id="cb1-694"><a href="#cb1-694" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(activities_sarah_attributed_sf<span class="sc">$</span>timelag_sec)</span>
+<span id="cb1-695"><a href="#cb1-695" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(activities_sarah_attributed_sf<span class="sc">$</span>steplenght)</span>
+<span id="cb1-696"><a href="#cb1-696" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(activities_sarah_attributed_sf<span class="sc">$</span>timelag_sec)</span>
+<span id="cb1-697"><a href="#cb1-697" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(activities_sarah_attributed_sf<span class="sc">$</span>steplenght)</span>
+<span id="cb1-698"><a href="#cb1-698" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-699"><a href="#cb1-699" aria-hidden="true" tabindex="-1"></a><span class="co"># Segmentation</span></span>
+<span id="cb1-700"><a href="#cb1-700" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify a temporal window for mean step</span></span>
+<span id="cb1-701"><a href="#cb1-701" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
+<span id="cb1-702"><a href="#cb1-702" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
+<span id="cb1-703"><a href="#cb1-703" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-704"><a href="#cb1-704" aria-hidden="true" tabindex="-1"></a>    <span class="at">nMinus2 =</span> <span class="fu">distance_by_element</span>(<span class="fu">lag</span>(geometry, <span class="dv">2</span>), geometry),  </span>
+<span id="cb1-705"><a href="#cb1-705" aria-hidden="true" tabindex="-1"></a>    <span class="at">nMinus1 =</span> <span class="fu">distance_by_element</span>(<span class="fu">lag</span>(geometry, <span class="dv">1</span>), geometry),  </span>
+<span id="cb1-706"><a href="#cb1-706" aria-hidden="true" tabindex="-1"></a>    <span class="at">nPlus1  =</span> <span class="fu">distance_by_element</span>(geometry, <span class="fu">lead</span>(geometry, <span class="dv">1</span>)), </span>
+<span id="cb1-707"><a href="#cb1-707" aria-hidden="true" tabindex="-1"></a>    <span class="at">nPlus2  =</span> <span class="fu">distance_by_element</span>(geometry, <span class="fu">lead</span>(geometry, <span class="dv">2</span>))  </span>
+<span id="cb1-708"><a href="#cb1-708" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-709"><a href="#cb1-709" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate mean step</span></span>
+<span id="cb1-710"><a href="#cb1-710" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
+<span id="cb1-711"><a href="#cb1-711" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
+<span id="cb1-712"><a href="#cb1-712" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">|&gt;</span></span>
+<span id="cb1-713"><a href="#cb1-713" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-714"><a href="#cb1-714" aria-hidden="true" tabindex="-1"></a>    <span class="at">stepMean =</span> <span class="fu">mean</span>(<span class="fu">c</span>(nMinus2, nMinus1, nPlus1, nPlus2))</span>
+<span id="cb1-715"><a href="#cb1-715" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb1-716"><a href="#cb1-716" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-717"><a href="#cb1-717" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate mean speed</span></span>
+<span id="cb1-718"><a href="#cb1-718" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
+<span id="cb1-719"><a href="#cb1-719" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
+<span id="cb1-720"><a href="#cb1-720" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-721"><a href="#cb1-721" aria-hidden="true" tabindex="-1"></a>    <span class="at">speedMean =</span> stepMean<span class="sc">/</span>timelag_sec</span>
+<span id="cb1-722"><a href="#cb1-722" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-723"><a href="#cb1-723" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-724"><a href="#cb1-724" aria-hidden="true" tabindex="-1"></a><span class="co"># apply threshold defined in test data</span></span>
+<span id="cb1-725"><a href="#cb1-725" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
+<span id="cb1-726"><a href="#cb1-726" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
+<span id="cb1-727"><a href="#cb1-727" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">static =</span> stepMean <span class="sc">&lt;</span>  <span class="fl">1.5</span>)</span>
+<span id="cb1-728"><a href="#cb1-728" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-729"><a href="#cb1-729" aria-hidden="true" tabindex="-1"></a><span class="co"># give segments an ID</span></span>
+<span id="cb1-730"><a href="#cb1-730" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
+<span id="cb1-731"><a href="#cb1-731" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(ID) <span class="sc">|&gt;</span></span>
+<span id="cb1-732"><a href="#cb1-732" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">segment_id =</span> <span class="fu">rle_id</span>(static)) <span class="sc">|&gt;</span> </span>
+<span id="cb1-733"><a href="#cb1-733" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb1-734"><a href="#cb1-734" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-735"><a href="#cb1-735" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate acceleration ####</span></span>
+<span id="cb1-736"><a href="#cb1-736" aria-hidden="true" tabindex="-1"></a>activities_sarah_attributed_sf <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
+<span id="cb1-737"><a href="#cb1-737" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">acceleration =</span> </span>
+<span id="cb1-738"><a href="#cb1-738" aria-hidden="true" tabindex="-1"></a>           <span class="fu">acceleration</span>(<span class="fu">lag</span>(speedMean), speedMean, timelag_sec))</span>
+<span id="cb1-739"><a href="#cb1-739" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-740"><a href="#cb1-740" aria-hidden="true" tabindex="-1"></a><span class="co"># create new id to group for classification</span></span>
+<span id="cb1-741"><a href="#cb1-741" aria-hidden="true" tabindex="-1"></a>activities_sarah_for_classification <span class="ot">&lt;-</span> activities_sarah_attributed_sf <span class="sc">|&gt;</span> </span>
+<span id="cb1-742"><a href="#cb1-742" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">combi_ID =</span> <span class="fu">paste</span>(ID, segment_id, <span class="at">sep =</span> <span class="st">"_"</span>))</span>
+<span id="cb1-743"><a href="#cb1-743" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-744"><a href="#cb1-744" aria-hidden="true" tabindex="-1"></a><span class="co"># group by newly set id</span></span>
+<span id="cb1-745"><a href="#cb1-745" aria-hidden="true" tabindex="-1"></a>sarah_classification <span class="ot">&lt;-</span> activities_sarah_for_classification <span class="sc">|&gt;</span> </span>
+<span id="cb1-746"><a href="#cb1-746" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(combi_ID) <span class="sc">|&gt;</span> </span>
+<span id="cb1-747"><a href="#cb1-747" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean_acceleration =</span> <span class="fu">mean</span>(acceleration, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb1-748"><a href="#cb1-748" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean_speed =</span> <span class="fu">mean</span>(speedMean, <span class="at">na.rm =</span><span class="cn">TRUE</span>),</span>
+<span id="cb1-749"><a href="#cb1-749" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean_step =</span> <span class="fu">mean</span>(stepMean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb1-750"><a href="#cb1-750" aria-hidden="true" tabindex="-1"></a>            <span class="at">lenght =</span> <span class="fu">length</span>(segment_id)</span>
+<span id="cb1-751"><a href="#cb1-751" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb1-752"><a href="#cb1-752" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb1-753"><a href="#cb1-753" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-754"><a href="#cb1-754" aria-hidden="true" tabindex="-1"></a><span class="co"># apply defined thresholds</span></span>
+<span id="cb1-755"><a href="#cb1-755" aria-hidden="true" tabindex="-1"></a>sarah_classification <span class="ot">&lt;-</span> sarah_classification <span class="sc">|&gt;</span> </span>
+<span id="cb1-756"><a href="#cb1-756" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">travel =</span> <span class="fu">if_else</span>(mean_speed <span class="sc">&gt;</span> <span class="fl">1.7</span> <span class="sc">&amp;</span> mean_speed <span class="sc">&lt;</span> <span class="dv">4</span></span>
+<span id="cb1-757"><a href="#cb1-757" aria-hidden="true" tabindex="-1"></a>                          <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="fl">1.7</span> <span class="sc">&amp;</span> mean_step <span class="sc">&lt;</span> <span class="dv">4</span></span>
+<span id="cb1-758"><a href="#cb1-758" aria-hidden="true" tabindex="-1"></a>                          <span class="sc">&amp;</span> mean_acceleration <span class="sc">&lt;</span> <span class="fl">0.003</span>,  <span class="dv">1</span> ,  <span class="dv">0</span> ),</span>
+<span id="cb1-759"><a href="#cb1-759" aria-hidden="true" tabindex="-1"></a>         <span class="at">recreation =</span> <span class="fu">if_else</span>(travel <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> ) </span>
+<span id="cb1-760"><a href="#cb1-760" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_speed <span class="sc">&gt;</span> <span class="fl">1.1</span>  <span class="sc">&amp;</span> mean_speed <span class="sc">&lt;</span> <span class="fl">1.7</span></span>
+<span id="cb1-761"><a href="#cb1-761" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="fl">1.2</span> <span class="sc">&amp;</span> mean_step <span class="sc">&lt;</span> <span class="fl">1.7</span></span>
+<span id="cb1-762"><a href="#cb1-762" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_acceleration <span class="sc">&lt;</span> <span class="fl">0.003</span>,  <span class="dv">1</span> ,  <span class="dv">0</span> ),</span>
+<span id="cb1-763"><a href="#cb1-763" aria-hidden="true" tabindex="-1"></a>         <span class="at">shopping =</span> <span class="fu">if_else</span>(travel <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> ) </span>
+<span id="cb1-764"><a href="#cb1-764" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> recreation <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> )</span>
+<span id="cb1-765"><a href="#cb1-765" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_speed <span class="sc">&gt;</span> <span class="dv">5</span> <span class="sc">|</span>  mean_speed <span class="sc">&lt;</span> <span class="fl">1.1</span></span>
+<span id="cb1-766"><a href="#cb1-766" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="dv">5</span> <span class="sc">|</span> mean_step <span class="sc">&lt;</span> <span class="fl">1.2</span></span>
+<span id="cb1-767"><a href="#cb1-767" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_acceleration <span class="sc">&gt;</span> <span class="fl">0.01</span></span>
+<span id="cb1-768"><a href="#cb1-768" aria-hidden="true" tabindex="-1"></a>                            ,  <span class="dv">1</span> ,  <span class="dv">0</span> ))</span>
+<span id="cb1-769"><a href="#cb1-769" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-770"><a href="#cb1-770" aria-hidden="true" tabindex="-1"></a><span class="co"># get attribute activity as text</span></span>
+<span id="cb1-771"><a href="#cb1-771" aria-hidden="true" tabindex="-1"></a>sarah_classification <span class="ot">&lt;-</span> sarah_classification <span class="sc">|&gt;</span> </span>
+<span id="cb1-772"><a href="#cb1-772" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">activity =</span> <span class="fu">if_else</span>(shopping <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"shopping"</span>, </span>
+<span id="cb1-773"><a href="#cb1-773" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">if_else</span>(recreation <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"recreation"</span>, <span class="st">"travel"</span>),<span class="st">"NA"</span>))</span>
+<span id="cb1-774"><a href="#cb1-774" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-775"><a href="#cb1-775" aria-hidden="true" tabindex="-1"></a><span class="co"># remove points that could not be classified</span></span>
+<span id="cb1-776"><a href="#cb1-776" aria-hidden="true" tabindex="-1"></a>sarah_classification <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(sarah_classification)</span>
+<span id="cb1-777"><a href="#cb1-777" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-778"><a href="#cb1-778" aria-hidden="true" tabindex="-1"></a><span class="co"># set classified activity as factor</span></span>
+<span id="cb1-779"><a href="#cb1-779" aria-hidden="true" tabindex="-1"></a>sarah_classification <span class="ot">&lt;-</span> sarah_classification <span class="sc">|&gt;</span> </span>
+<span id="cb1-780"><a href="#cb1-780" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">activity_factor =</span> <span class="fu">as.factor</span>(activity)) </span>
+<span id="cb1-781"><a href="#cb1-781" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-782"><a href="#cb1-782" aria-hidden="true" tabindex="-1"></a><span class="co"># join classification table with sf object</span></span>
+<span id="cb1-783"><a href="#cb1-783" aria-hidden="true" tabindex="-1"></a>sarah_activities_classified <span class="ot">&lt;-</span> <span class="fu">st_join</span>(activities_sarah_attributed_sf, sarah_classification, <span class="at">left =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-784"><a href="#cb1-784" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-785"><a href="#cb1-785" aria-hidden="true" tabindex="-1"></a><span class="co"># calcualte confusion matrix</span></span>
+<span id="cb1-786"><a href="#cb1-786" aria-hidden="true" tabindex="-1"></a>confus <span class="ot">&lt;-</span><span class="fu">conf_mat</span>(<span class="at">data =</span> sarah_activities_classified, <span class="at">truth =</span> Attribute_factor, <span class="at">estimate =</span> activity_factor)</span>
+<span id="cb1-787"><a href="#cb1-787" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-788"><a href="#cb1-788" aria-hidden="true" tabindex="-1"></a><span class="co"># get statitics for confusion matrix</span></span>
+<span id="cb1-789"><a href="#cb1-789" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(sarah_activities_classified<span class="sc">$</span>Attribute_factor, sarah_activities_classified<span class="sc">$</span>activity_factor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <section id="abstract" class="level2">
