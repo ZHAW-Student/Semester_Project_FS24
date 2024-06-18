@@ -454,9 +454,6 @@ summary_training <- training_activities_attributed_sf |>
             ) |> 
   ungroup()
 
-# Export csv for CAMA workflow
-# st_write(training_activities_attributed_sf, "test_activities_with_attributes_korrigiert.csv")
-
 # create new id to group by for classification
 training_activities_for_classification <- training_activities_attributed_sf |> 
   mutate(combi_ID = paste(ID, segment_id, sep = "_"))
@@ -483,8 +480,8 @@ training_classification <- training_classification |>
                               & mean_acceleration < 0.003,  1 ,  0 ),
          shopping = if_else(travel %in% c( 0 ) 
                             & recreation %in% c( 0 )
-                            & mean_speed > 5 |  mean_speed < 1.1
-                            & mean_step > 5 | mean_step < 1.2
+                            & mean_speed > 4 |  mean_speed < 1.1
+                            & mean_step > 4 | mean_step < 1.2
                             & mean_acceleration > 0.01
                               ,  1 ,  0 ))
 
@@ -501,10 +498,13 @@ training_classification <- training_classification |>
   mutate(activity_factor = as.factor(activity)) 
   
 # join classified table with sf object
-training_activities_classified <- st_join(training_activities_attributed_sf, training_classification, left = TRUE)
+training_activities_classified <- st_join(training_activities_for_classification, training_classification, left = TRUE)
 
 # calculate confusion matrix to test classification
 confus_training <-conf_mat(data = training_activities_classified, truth = Attribute_factor, estimate = activity_factor)
+
+# Export csv for other approaches
+# st_write(training_activities_classified, "test_activities_with_attributes_new.csv")
 
 # get statistics for confusion matrix 
 confusionMatrix(training_activities_classified$Attribute_factor, training_activities_classified$activity_factor)
@@ -625,8 +625,8 @@ saskia_classification <- saskia_classification |>
                               & mean_acceleration < 0.003,  1 ,  0 ),
          shopping = if_else(travel %in% c( 0 ) 
                             & recreation %in% c( 0 )
-                            & mean_speed > 5 |  mean_speed < 1.1
-                            & mean_step > 5 | mean_step < 1.2
+                            & mean_speed > 4 |  mean_speed < 1.1
+                            & mean_step > 4 | mean_step < 1.2
                             & mean_acceleration > 0.01
                             ,  1 ,  0 ))
 
@@ -645,7 +645,7 @@ saskia_classification <- saskia_classification |>
 saskia_activities_classified <- st_join(activities_saskia_for_classification, saskia_classification, left = TRUE)
 
 # Export csv for other approaches
-# st_write(saskia_activities_classified, "activities_saskia_with_attributes_classified.csv")
+#st_write(saskia_activities_classified, "activities_saskia_with_attributes_classified_new.csv")
 
 # generate confusion matrix for data
 confus_saskia <-conf_mat(data = saskia_activities_classified, truth = Attribute_factor, estimate = activity_factor)
@@ -768,8 +768,8 @@ sarah_classification <- sarah_classification |>
                               & mean_acceleration < 0.003,  1 ,  0 ),
          shopping = if_else(travel %in% c( 0 ) 
                             & recreation %in% c( 0 )
-                            & mean_speed > 5 |  mean_speed < 1.1
-                            & mean_step > 5 | mean_step < 1.2
+                            & mean_speed > 4 |  mean_speed < 1.1
+                            & mean_step > 4 | mean_step < 1.2
                             & mean_acceleration > 0.01
                             ,  1 ,  0 ))
 
@@ -786,7 +786,10 @@ sarah_classification <- sarah_classification |>
   mutate(activity_factor = as.factor(activity)) 
 
 # join classification table with sf object
-sarah_activities_classified <- st_join(activities_sarah_attributed_sf, sarah_classification, left = TRUE)
+sarah_activities_classified <- st_join(activities_sarah_for_classification, sarah_classification, left = TRUE)
+
+# Export csv for other approaches
+#st_write(sarah_activities_classified, "activities_sarah_with_attributes_classified_new.csv")
 
 # calcualte confusion matrix
 confus_sarah <-conf_mat(data = sarah_activities_classified, truth = Attribute_factor, estimate = activity_factor)
@@ -805,7 +808,7 @@ library("yardstick")
 library("caret")
 ```
 
-```{r}
+```{r workflows}
 #| code-summary: workflows
 #rankdir = LR, label = '\n\n',labelloc = t
 
@@ -876,7 +879,7 @@ validation_workflow |>
 
 #Attribute based ----
 attribute_based_workflow <- grViz("digraph{
-graph [layout = dot]
+graph [layout = dot, rankdir = LR]
 node [shape = rectangle, style = filled, fillcolor = white]
 travel[label='mean speed 1.7m/s - 4m/s \\n mean step 1.7m - 4m \\n mean acceleration < 0.003m^2']
 travelyes[label='Yes']
@@ -886,7 +889,7 @@ recr[label='mean speed 1.1m/s - 1.7m/s \\n mean step 1.2m - 1.7m \\n mean accele
 recryes[label='Yes']
 recrtra[label='Is recreation']
 recrno[label='No']
-shop[label='mean speed > 5m/s or < 1.1m/s \\n mean step > 5m or < 1.2 \\n mean acceleration >0.001m^2']
+shop[label='mean speed > 4m/s or < 1.1m/s \\n mean step > 4m or < 1.2 \\n mean acceleration >0.001m^2']
 shopyes[label='Yes']
 shopyesshop[label='Is shopping']
 shopno[label='No ']
@@ -910,7 +913,7 @@ attribute_based_workflow |>
 
 #CAMA based
 cama_workflow <- grViz("digraph{
-graph [layout = dot]
+graph [layout = dot, rankdir = LR]
 node [shape = rectangle, style = filled, fillcolor = white]
 
 build[label='Is it in a building?']
@@ -990,7 +993,7 @@ text
 
 #### Training data
 
-Despite extensive testing and adapting of the thresholds, it was not possible to correctly classify all activities. Based on the attributes speed, step length and acceleration, activities were hard to distinguish. 49 out of 12'886 points could not be classified and were removed before computing the confusion matrix. 7'537 points were classified correctly, which leads to an overall accuracy of 59 %. Sensitivity is highest for the class travel (0.61), specificity is highest for the class shopping (0.98). Detection rate is highest for travel (0.54). Travel and recreation were most difficult to differentiate. 
+Despite extensive testing and adapting of the thresholds, it was not possible to correctly classify all activities. Based on the attributes speed, step length and acceleration, activities were hard to distinguish. 49 out of 12'886 points could not be classified and were removed before computing the confusion matrix. 7'526 points were classified correctly, which leads to an overall accuracy of 59 %. Sensitivity is highest for the class travel (0.61), specificity is highest for the class shopping (0.98). Detection rate is highest for travel (0.54). Travel and recreation were most difficult to differentiate. 
 
 ```{r confusion matrix, message=FALSE, results='hide', fig.cap="Confusion matrix for the training data. The overall accuracy is 59 %. Despite adapting thresholds, travel and recreation could not be clearly differentiated."}
 #| code-summary: confusion matrix training data
@@ -1003,9 +1006,9 @@ autoplot(confus_training, type="heatmap")+
 
 #### Activity data Saskia
 
-30 points could not be classified and were removed before computing the confusion matrix. The overall accuracy of the model for the activity data of Saskia is 33 %. Again, sensitivity is highest for travel (0.34), as well as the detection rate (0.33).
+30 out of 6826 points could not be classified and were removed before computing the confusion matrix. 2270 points were classified correctly, leading to an overall accuracy of the model for the activity data of Saskia of 33 %. Again, sensitivity is highest for travel (0.34), as well as the detection rate (0.33).
 
-```{r confusion matrix Saskias data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskias data. Most misclassifications occur with travel and recreation."}
+```{r confusion matrix Saskias data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskias data. The accuracy is 33 %. Most misclassifications occur with travel and recreation."}
 #| code-summary: Confusion matrix for Saskias data
 # plot confusion matrix
 autoplot(confus_saskia, type="heatmap")+
@@ -1016,9 +1019,9 @@ autoplot(confus_saskia, type="heatmap")+
 
 #### Activity data Sarah
 
-51 points could not be classified and were removed before computing the confusion matrix. For Sarahs activities, the accuracy of the model is 19 %. The sensitivity for recreation is highest (0.71), the detection rate is highest for travel (0.16).
+51 out of 17'061 points could not be classified and were removed before computing the confusion matrix. For Sarahs activities, 3209 points were classified correctly. The accuracy of the model is 19 %. The sensitivity for recreation is highest (0.71), the detection rate is highest for travel (0.16).
 
-```{r confusion matrix Sarahs data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarahs data"}
+```{r confusion matrix Sarahs data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarahs data. The accuracy is 19 %. 95 % of the points are classified as travel."}
 #| code-summary: Confusion matrix Sarahs data
 # plot confusion matrix
 autoplot(confus_sarah, type="heatmap")+

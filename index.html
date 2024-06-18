@@ -569,57 +569,57 @@ div.csl-indent {
 <span id="cb2-227"><a href="#cb2-227" aria-hidden="true" tabindex="-1"></a>            ) <span class="sc">|&gt;</span> </span>
 <span id="cb2-228"><a href="#cb2-228" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
 <span id="cb2-229"><a href="#cb2-229" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-230"><a href="#cb2-230" aria-hidden="true" tabindex="-1"></a><span class="co"># Export csv for CAMA workflow</span></span>
-<span id="cb2-231"><a href="#cb2-231" aria-hidden="true" tabindex="-1"></a><span class="co"># st_write(training_activities_attributed_sf, "test_activities_with_attributes_korrigiert.csv")</span></span>
-<span id="cb2-232"><a href="#cb2-232" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-233"><a href="#cb2-233" aria-hidden="true" tabindex="-1"></a><span class="co"># create new id to group by for classification</span></span>
-<span id="cb2-234"><a href="#cb2-234" aria-hidden="true" tabindex="-1"></a>training_activities_for_classification <span class="ot">&lt;-</span> training_activities_attributed_sf <span class="sc">|&gt;</span> </span>
-<span id="cb2-235"><a href="#cb2-235" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">combi_ID =</span> <span class="fu">paste</span>(ID, segment_id, <span class="at">sep =</span> <span class="st">"_"</span>))</span>
-<span id="cb2-236"><a href="#cb2-236" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-237"><a href="#cb2-237" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-238"><a href="#cb2-238" aria-hidden="true" tabindex="-1"></a><span class="co"># summarize with new id</span></span>
-<span id="cb2-239"><a href="#cb2-239" aria-hidden="true" tabindex="-1"></a>training_classification <span class="ot">&lt;-</span> training_activities_for_classification <span class="sc">|&gt;</span> </span>
-<span id="cb2-240"><a href="#cb2-240" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(combi_ID) <span class="sc">|&gt;</span> </span>
-<span id="cb2-241"><a href="#cb2-241" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean_acceleration =</span> <span class="fu">mean</span>(acceleration, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb2-242"><a href="#cb2-242" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean_speed =</span> <span class="fu">mean</span>(speedMean, <span class="at">na.rm =</span><span class="cn">TRUE</span>),</span>
-<span id="cb2-243"><a href="#cb2-243" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean_step =</span> <span class="fu">mean</span>(stepMean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb2-244"><a href="#cb2-244" aria-hidden="true" tabindex="-1"></a>            <span class="at">lenght =</span> <span class="fu">length</span>(segment_id)</span>
-<span id="cb2-245"><a href="#cb2-245" aria-hidden="true" tabindex="-1"></a>            ) <span class="sc">|&gt;</span> </span>
-<span id="cb2-246"><a href="#cb2-246" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
-<span id="cb2-247"><a href="#cb2-247" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-248"><a href="#cb2-248" aria-hidden="true" tabindex="-1"></a><span class="co"># apply thresholds for attributes</span></span>
-<span id="cb2-249"><a href="#cb2-249" aria-hidden="true" tabindex="-1"></a>training_classification <span class="ot">&lt;-</span> training_classification <span class="sc">|&gt;</span> </span>
-<span id="cb2-250"><a href="#cb2-250" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">travel =</span> <span class="fu">if_else</span>(mean_speed <span class="sc">&gt;</span> <span class="fl">1.7</span> <span class="sc">&amp;</span> mean_speed <span class="sc">&lt;</span> <span class="dv">4</span></span>
-<span id="cb2-251"><a href="#cb2-251" aria-hidden="true" tabindex="-1"></a>                          <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="fl">1.7</span> <span class="sc">&amp;</span> mean_step <span class="sc">&lt;</span> <span class="dv">4</span></span>
-<span id="cb2-252"><a href="#cb2-252" aria-hidden="true" tabindex="-1"></a>                          <span class="sc">&amp;</span> mean_acceleration <span class="sc">&lt;</span> <span class="fl">0.003</span>,  <span class="dv">1</span> ,  <span class="dv">0</span> ),</span>
-<span id="cb2-253"><a href="#cb2-253" aria-hidden="true" tabindex="-1"></a>         <span class="at">recreation =</span> <span class="fu">if_else</span>(travel <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> ) </span>
-<span id="cb2-254"><a href="#cb2-254" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_speed <span class="sc">&gt;</span> <span class="fl">1.1</span>  <span class="sc">&amp;</span> mean_speed <span class="sc">&lt;</span> <span class="fl">1.7</span></span>
-<span id="cb2-255"><a href="#cb2-255" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="fl">1.2</span> <span class="sc">&amp;</span> mean_step <span class="sc">&lt;</span> <span class="fl">1.7</span></span>
-<span id="cb2-256"><a href="#cb2-256" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_acceleration <span class="sc">&lt;</span> <span class="fl">0.003</span>,  <span class="dv">1</span> ,  <span class="dv">0</span> ),</span>
-<span id="cb2-257"><a href="#cb2-257" aria-hidden="true" tabindex="-1"></a>         <span class="at">shopping =</span> <span class="fu">if_else</span>(travel <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> ) </span>
-<span id="cb2-258"><a href="#cb2-258" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> recreation <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> )</span>
-<span id="cb2-259"><a href="#cb2-259" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_speed <span class="sc">&gt;</span> <span class="dv">5</span> <span class="sc">|</span>  mean_speed <span class="sc">&lt;</span> <span class="fl">1.1</span></span>
-<span id="cb2-260"><a href="#cb2-260" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="dv">5</span> <span class="sc">|</span> mean_step <span class="sc">&lt;</span> <span class="fl">1.2</span></span>
-<span id="cb2-261"><a href="#cb2-261" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_acceleration <span class="sc">&gt;</span> <span class="fl">0.01</span></span>
-<span id="cb2-262"><a href="#cb2-262" aria-hidden="true" tabindex="-1"></a>                              ,  <span class="dv">1</span> ,  <span class="dv">0</span> ))</span>
-<span id="cb2-263"><a href="#cb2-263" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-264"><a href="#cb2-264" aria-hidden="true" tabindex="-1"></a><span class="co"># create new attribute with activity as character based on applied thresholds</span></span>
-<span id="cb2-265"><a href="#cb2-265" aria-hidden="true" tabindex="-1"></a>training_classification <span class="ot">&lt;-</span> training_classification <span class="sc">|&gt;</span> </span>
-<span id="cb2-266"><a href="#cb2-266" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">activity =</span> <span class="fu">if_else</span>(shopping <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"shopping"</span>, </span>
-<span id="cb2-267"><a href="#cb2-267" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">if_else</span>(recreation <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"recreation"</span>, <span class="st">"travel"</span>),<span class="st">"NA"</span>))</span>
+<span id="cb2-230"><a href="#cb2-230" aria-hidden="true" tabindex="-1"></a><span class="co"># create new id to group by for classification</span></span>
+<span id="cb2-231"><a href="#cb2-231" aria-hidden="true" tabindex="-1"></a>training_activities_for_classification <span class="ot">&lt;-</span> training_activities_attributed_sf <span class="sc">|&gt;</span> </span>
+<span id="cb2-232"><a href="#cb2-232" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">combi_ID =</span> <span class="fu">paste</span>(ID, segment_id, <span class="at">sep =</span> <span class="st">"_"</span>))</span>
+<span id="cb2-233"><a href="#cb2-233" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-234"><a href="#cb2-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-235"><a href="#cb2-235" aria-hidden="true" tabindex="-1"></a><span class="co"># summarize with new id</span></span>
+<span id="cb2-236"><a href="#cb2-236" aria-hidden="true" tabindex="-1"></a>training_classification <span class="ot">&lt;-</span> training_activities_for_classification <span class="sc">|&gt;</span> </span>
+<span id="cb2-237"><a href="#cb2-237" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(combi_ID) <span class="sc">|&gt;</span> </span>
+<span id="cb2-238"><a href="#cb2-238" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean_acceleration =</span> <span class="fu">mean</span>(acceleration, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb2-239"><a href="#cb2-239" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean_speed =</span> <span class="fu">mean</span>(speedMean, <span class="at">na.rm =</span><span class="cn">TRUE</span>),</span>
+<span id="cb2-240"><a href="#cb2-240" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean_step =</span> <span class="fu">mean</span>(stepMean, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb2-241"><a href="#cb2-241" aria-hidden="true" tabindex="-1"></a>            <span class="at">lenght =</span> <span class="fu">length</span>(segment_id)</span>
+<span id="cb2-242"><a href="#cb2-242" aria-hidden="true" tabindex="-1"></a>            ) <span class="sc">|&gt;</span> </span>
+<span id="cb2-243"><a href="#cb2-243" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb2-244"><a href="#cb2-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-245"><a href="#cb2-245" aria-hidden="true" tabindex="-1"></a><span class="co"># apply thresholds for attributes</span></span>
+<span id="cb2-246"><a href="#cb2-246" aria-hidden="true" tabindex="-1"></a>training_classification <span class="ot">&lt;-</span> training_classification <span class="sc">|&gt;</span> </span>
+<span id="cb2-247"><a href="#cb2-247" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">travel =</span> <span class="fu">if_else</span>(mean_speed <span class="sc">&gt;</span> <span class="fl">1.7</span> <span class="sc">&amp;</span> mean_speed <span class="sc">&lt;</span> <span class="dv">4</span></span>
+<span id="cb2-248"><a href="#cb2-248" aria-hidden="true" tabindex="-1"></a>                          <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="fl">1.7</span> <span class="sc">&amp;</span> mean_step <span class="sc">&lt;</span> <span class="dv">4</span></span>
+<span id="cb2-249"><a href="#cb2-249" aria-hidden="true" tabindex="-1"></a>                          <span class="sc">&amp;</span> mean_acceleration <span class="sc">&lt;</span> <span class="fl">0.003</span>,  <span class="dv">1</span> ,  <span class="dv">0</span> ),</span>
+<span id="cb2-250"><a href="#cb2-250" aria-hidden="true" tabindex="-1"></a>         <span class="at">recreation =</span> <span class="fu">if_else</span>(travel <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> ) </span>
+<span id="cb2-251"><a href="#cb2-251" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_speed <span class="sc">&gt;</span> <span class="fl">1.1</span>  <span class="sc">&amp;</span> mean_speed <span class="sc">&lt;</span> <span class="fl">1.7</span></span>
+<span id="cb2-252"><a href="#cb2-252" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="fl">1.2</span> <span class="sc">&amp;</span> mean_step <span class="sc">&lt;</span> <span class="fl">1.7</span></span>
+<span id="cb2-253"><a href="#cb2-253" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_acceleration <span class="sc">&lt;</span> <span class="fl">0.003</span>,  <span class="dv">1</span> ,  <span class="dv">0</span> ),</span>
+<span id="cb2-254"><a href="#cb2-254" aria-hidden="true" tabindex="-1"></a>         <span class="at">shopping =</span> <span class="fu">if_else</span>(travel <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> ) </span>
+<span id="cb2-255"><a href="#cb2-255" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> recreation <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> )</span>
+<span id="cb2-256"><a href="#cb2-256" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_speed <span class="sc">&gt;</span> <span class="dv">4</span> <span class="sc">|</span>  mean_speed <span class="sc">&lt;</span> <span class="fl">1.1</span></span>
+<span id="cb2-257"><a href="#cb2-257" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="dv">4</span> <span class="sc">|</span> mean_step <span class="sc">&lt;</span> <span class="fl">1.2</span></span>
+<span id="cb2-258"><a href="#cb2-258" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_acceleration <span class="sc">&gt;</span> <span class="fl">0.01</span></span>
+<span id="cb2-259"><a href="#cb2-259" aria-hidden="true" tabindex="-1"></a>                              ,  <span class="dv">1</span> ,  <span class="dv">0</span> ))</span>
+<span id="cb2-260"><a href="#cb2-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-261"><a href="#cb2-261" aria-hidden="true" tabindex="-1"></a><span class="co"># create new attribute with activity as character based on applied thresholds</span></span>
+<span id="cb2-262"><a href="#cb2-262" aria-hidden="true" tabindex="-1"></a>training_classification <span class="ot">&lt;-</span> training_classification <span class="sc">|&gt;</span> </span>
+<span id="cb2-263"><a href="#cb2-263" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">activity =</span> <span class="fu">if_else</span>(shopping <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"shopping"</span>, </span>
+<span id="cb2-264"><a href="#cb2-264" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">if_else</span>(recreation <span class="sc">==</span> <span class="dv">1</span>, <span class="st">"recreation"</span>, <span class="st">"travel"</span>),<span class="st">"NA"</span>))</span>
+<span id="cb2-265"><a href="#cb2-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-266"><a href="#cb2-266" aria-hidden="true" tabindex="-1"></a><span class="co"># remove points where classification was not possible</span></span>
+<span id="cb2-267"><a href="#cb2-267" aria-hidden="true" tabindex="-1"></a>training_classification <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(training_classification)</span>
 <span id="cb2-268"><a href="#cb2-268" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-269"><a href="#cb2-269" aria-hidden="true" tabindex="-1"></a><span class="co"># remove points where classification was not possible</span></span>
-<span id="cb2-270"><a href="#cb2-270" aria-hidden="true" tabindex="-1"></a>training_classification <span class="ot">&lt;-</span> <span class="fu">na.omit</span>(training_classification)</span>
-<span id="cb2-271"><a href="#cb2-271" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-272"><a href="#cb2-272" aria-hidden="true" tabindex="-1"></a><span class="co"># define activity as factor</span></span>
-<span id="cb2-273"><a href="#cb2-273" aria-hidden="true" tabindex="-1"></a>training_classification <span class="ot">&lt;-</span> training_classification <span class="sc">|&gt;</span> </span>
-<span id="cb2-274"><a href="#cb2-274" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">activity_factor =</span> <span class="fu">as.factor</span>(activity)) </span>
-<span id="cb2-275"><a href="#cb2-275" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-276"><a href="#cb2-276" aria-hidden="true" tabindex="-1"></a><span class="co"># join classified table with sf object</span></span>
-<span id="cb2-277"><a href="#cb2-277" aria-hidden="true" tabindex="-1"></a>training_activities_classified <span class="ot">&lt;-</span> <span class="fu">st_join</span>(training_activities_attributed_sf, training_classification, <span class="at">left =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-269"><a href="#cb2-269" aria-hidden="true" tabindex="-1"></a><span class="co"># define activity as factor</span></span>
+<span id="cb2-270"><a href="#cb2-270" aria-hidden="true" tabindex="-1"></a>training_classification <span class="ot">&lt;-</span> training_classification <span class="sc">|&gt;</span> </span>
+<span id="cb2-271"><a href="#cb2-271" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">activity_factor =</span> <span class="fu">as.factor</span>(activity)) </span>
+<span id="cb2-272"><a href="#cb2-272" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-273"><a href="#cb2-273" aria-hidden="true" tabindex="-1"></a><span class="co"># join classified table with sf object</span></span>
+<span id="cb2-274"><a href="#cb2-274" aria-hidden="true" tabindex="-1"></a>training_activities_classified <span class="ot">&lt;-</span> <span class="fu">st_join</span>(training_activities_attributed_sf, training_classification, <span class="at">left =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-275"><a href="#cb2-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-276"><a href="#cb2-276" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate confusion matrix to test classification</span></span>
+<span id="cb2-277"><a href="#cb2-277" aria-hidden="true" tabindex="-1"></a>confus_training <span class="ot">&lt;-</span><span class="fu">conf_mat</span>(<span class="at">data =</span> training_activities_classified, <span class="at">truth =</span> Attribute_factor, <span class="at">estimate =</span> activity_factor)</span>
 <span id="cb2-278"><a href="#cb2-278" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-279"><a href="#cb2-279" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate confusion matrix to test classification</span></span>
-<span id="cb2-280"><a href="#cb2-280" aria-hidden="true" tabindex="-1"></a>confus_training <span class="ot">&lt;-</span><span class="fu">conf_mat</span>(<span class="at">data =</span> training_activities_classified, <span class="at">truth =</span> Attribute_factor, <span class="at">estimate =</span> activity_factor)</span>
+<span id="cb2-279"><a href="#cb2-279" aria-hidden="true" tabindex="-1"></a><span class="co"># Export csv for CAMA workflow</span></span>
+<span id="cb2-280"><a href="#cb2-280" aria-hidden="true" tabindex="-1"></a><span class="co"># st_write(training_activities_classified, "test_activities_with_attributes_new.csv")</span></span>
 <span id="cb2-281"><a href="#cb2-281" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-282"><a href="#cb2-282" aria-hidden="true" tabindex="-1"></a><span class="co"># get statistics for confusion matrix </span></span>
 <span id="cb2-283"><a href="#cb2-283" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(training_activities_classified<span class="sc">$</span>Attribute_factor, training_activities_classified<span class="sc">$</span>activity_factor)</span>
@@ -740,8 +740,8 @@ div.csl-indent {
 <span id="cb2-398"><a href="#cb2-398" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_acceleration <span class="sc">&lt;</span> <span class="fl">0.003</span>,  <span class="dv">1</span> ,  <span class="dv">0</span> ),</span>
 <span id="cb2-399"><a href="#cb2-399" aria-hidden="true" tabindex="-1"></a>         <span class="at">shopping =</span> <span class="fu">if_else</span>(travel <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> ) </span>
 <span id="cb2-400"><a href="#cb2-400" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> recreation <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> )</span>
-<span id="cb2-401"><a href="#cb2-401" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_speed <span class="sc">&gt;</span> <span class="dv">5</span> <span class="sc">|</span>  mean_speed <span class="sc">&lt;</span> <span class="fl">1.1</span></span>
-<span id="cb2-402"><a href="#cb2-402" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="dv">5</span> <span class="sc">|</span> mean_step <span class="sc">&lt;</span> <span class="fl">1.2</span></span>
+<span id="cb2-401"><a href="#cb2-401" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_speed <span class="sc">&gt;</span> <span class="dv">4</span> <span class="sc">|</span>  mean_speed <span class="sc">&lt;</span> <span class="fl">1.1</span></span>
+<span id="cb2-402"><a href="#cb2-402" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="dv">4</span> <span class="sc">|</span> mean_step <span class="sc">&lt;</span> <span class="fl">1.2</span></span>
 <span id="cb2-403"><a href="#cb2-403" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_acceleration <span class="sc">&gt;</span> <span class="fl">0.01</span></span>
 <span id="cb2-404"><a href="#cb2-404" aria-hidden="true" tabindex="-1"></a>                            ,  <span class="dv">1</span> ,  <span class="dv">0</span> ))</span>
 <span id="cb2-405"><a href="#cb2-405" aria-hidden="true" tabindex="-1"></a></span>
@@ -760,7 +760,7 @@ div.csl-indent {
 <span id="cb2-418"><a href="#cb2-418" aria-hidden="true" tabindex="-1"></a>saskia_activities_classified <span class="ot">&lt;-</span> <span class="fu">st_join</span>(activities_saskia_for_classification, saskia_classification, <span class="at">left =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb2-419"><a href="#cb2-419" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-420"><a href="#cb2-420" aria-hidden="true" tabindex="-1"></a><span class="co"># Export csv for other approaches</span></span>
-<span id="cb2-421"><a href="#cb2-421" aria-hidden="true" tabindex="-1"></a><span class="co"># st_write(saskia_activities_classified, "activities_saskia_with_attributes_classified.csv")</span></span>
+<span id="cb2-421"><a href="#cb2-421" aria-hidden="true" tabindex="-1"></a><span class="co">#st_write(saskia_activities_classified, "activities_saskia_with_attributes_classified_new.csv")</span></span>
 <span id="cb2-422"><a href="#cb2-422" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-423"><a href="#cb2-423" aria-hidden="true" tabindex="-1"></a><span class="co"># generate confusion matrix for data</span></span>
 <span id="cb2-424"><a href="#cb2-424" aria-hidden="true" tabindex="-1"></a>confus_saskia <span class="ot">&lt;-</span><span class="fu">conf_mat</span>(<span class="at">data =</span> saskia_activities_classified, <span class="at">truth =</span> Attribute_factor, <span class="at">estimate =</span> activity_factor)</span>
@@ -883,8 +883,8 @@ div.csl-indent {
 <span id="cb2-541"><a href="#cb2-541" aria-hidden="true" tabindex="-1"></a>                              <span class="sc">&amp;</span> mean_acceleration <span class="sc">&lt;</span> <span class="fl">0.003</span>,  <span class="dv">1</span> ,  <span class="dv">0</span> ),</span>
 <span id="cb2-542"><a href="#cb2-542" aria-hidden="true" tabindex="-1"></a>         <span class="at">shopping =</span> <span class="fu">if_else</span>(travel <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> ) </span>
 <span id="cb2-543"><a href="#cb2-543" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> recreation <span class="sc">%in%</span> <span class="fu">c</span>( <span class="dv">0</span> )</span>
-<span id="cb2-544"><a href="#cb2-544" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_speed <span class="sc">&gt;</span> <span class="dv">5</span> <span class="sc">|</span>  mean_speed <span class="sc">&lt;</span> <span class="fl">1.1</span></span>
-<span id="cb2-545"><a href="#cb2-545" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="dv">5</span> <span class="sc">|</span> mean_step <span class="sc">&lt;</span> <span class="fl">1.2</span></span>
+<span id="cb2-544"><a href="#cb2-544" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_speed <span class="sc">&gt;</span> <span class="dv">4</span> <span class="sc">|</span>  mean_speed <span class="sc">&lt;</span> <span class="fl">1.1</span></span>
+<span id="cb2-545"><a href="#cb2-545" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_step <span class="sc">&gt;</span> <span class="dv">4</span> <span class="sc">|</span> mean_step <span class="sc">&lt;</span> <span class="fl">1.2</span></span>
 <span id="cb2-546"><a href="#cb2-546" aria-hidden="true" tabindex="-1"></a>                            <span class="sc">&amp;</span> mean_acceleration <span class="sc">&gt;</span> <span class="fl">0.01</span></span>
 <span id="cb2-547"><a href="#cb2-547" aria-hidden="true" tabindex="-1"></a>                            ,  <span class="dv">1</span> ,  <span class="dv">0</span> ))</span>
 <span id="cb2-548"><a href="#cb2-548" aria-hidden="true" tabindex="-1"></a></span>
@@ -901,13 +901,16 @@ div.csl-indent {
 <span id="cb2-559"><a href="#cb2-559" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">activity_factor =</span> <span class="fu">as.factor</span>(activity)) </span>
 <span id="cb2-560"><a href="#cb2-560" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-561"><a href="#cb2-561" aria-hidden="true" tabindex="-1"></a><span class="co"># join classification table with sf object</span></span>
-<span id="cb2-562"><a href="#cb2-562" aria-hidden="true" tabindex="-1"></a>sarah_activities_classified <span class="ot">&lt;-</span> <span class="fu">st_join</span>(activities_sarah_attributed_sf, sarah_classification, <span class="at">left =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-562"><a href="#cb2-562" aria-hidden="true" tabindex="-1"></a>sarah_activities_classified <span class="ot">&lt;-</span> <span class="fu">st_join</span>(activities_sarah_for_classification, sarah_classification, <span class="at">left =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb2-563"><a href="#cb2-563" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-564"><a href="#cb2-564" aria-hidden="true" tabindex="-1"></a><span class="co"># calcualte confusion matrix</span></span>
-<span id="cb2-565"><a href="#cb2-565" aria-hidden="true" tabindex="-1"></a>confus_sarah <span class="ot">&lt;-</span><span class="fu">conf_mat</span>(<span class="at">data =</span> sarah_activities_classified, <span class="at">truth =</span> Attribute_factor, <span class="at">estimate =</span> activity_factor)</span>
+<span id="cb2-564"><a href="#cb2-564" aria-hidden="true" tabindex="-1"></a><span class="co"># Export csv for other approaches</span></span>
+<span id="cb2-565"><a href="#cb2-565" aria-hidden="true" tabindex="-1"></a><span class="co">#st_write(sarah_activities_classified, "activities_sarah_with_attributes_classified_new.csv")</span></span>
 <span id="cb2-566"><a href="#cb2-566" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-567"><a href="#cb2-567" aria-hidden="true" tabindex="-1"></a><span class="co"># get statitics for confusion matrix</span></span>
-<span id="cb2-568"><a href="#cb2-568" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(sarah_activities_classified<span class="sc">$</span>Attribute_factor, sarah_activities_classified<span class="sc">$</span>activity_factor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-567"><a href="#cb2-567" aria-hidden="true" tabindex="-1"></a><span class="co"># calcualte confusion matrix</span></span>
+<span id="cb2-568"><a href="#cb2-568" aria-hidden="true" tabindex="-1"></a>confus_sarah <span class="ot">&lt;-</span><span class="fu">conf_mat</span>(<span class="at">data =</span> sarah_activities_classified, <span class="at">truth =</span> Attribute_factor, <span class="at">estimate =</span> activity_factor)</span>
+<span id="cb2-569"><a href="#cb2-569" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-570"><a href="#cb2-570" aria-hidden="true" tabindex="-1"></a><span class="co"># get statitics for confusion matrix</span></span>
+<span id="cb2-571"><a href="#cb2-571" aria-hidden="true" tabindex="-1"></a><span class="fu">confusionMatrix</span>(sarah_activities_classified<span class="sc">$</span>Attribute_factor, sarah_activities_classified<span class="sc">$</span>activity_factor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
@@ -994,7 +997,7 @@ div.csl-indent {
 <span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a><span class="co">#Attribute based ----</span></span>
 <span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>attribute_based_workflow <span class="ot">&lt;-</span> <span class="fu">grViz</span>(<span class="st">"digraph{</span></span>
-<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a><span class="st">graph [layout = dot]</span></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a><span class="st">graph [layout = dot, rankdir = LR]</span></span>
 <span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a><span class="st">node [shape = rectangle, style = filled, fillcolor = white]</span></span>
 <span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a><span class="st">travel[label='mean speed 1.7m/s - 4m/s </span><span class="sc">\\</span><span class="st">n mean step 1.7m - 4m </span><span class="sc">\\</span><span class="st">n mean acceleration &lt; 0.003m^2']</span></span>
 <span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a><span class="st">travelyes[label='Yes']</span></span>
@@ -1004,7 +1007,7 @@ div.csl-indent {
 <span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a><span class="st">recryes[label='Yes']</span></span>
 <span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a><span class="st">recrtra[label='Is recreation']</span></span>
 <span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a><span class="st">recrno[label='No']</span></span>
-<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a><span class="st">shop[label='mean speed &gt; 5m/s or &lt; 1.1m/s </span><span class="sc">\\</span><span class="st">n mean step &gt; 5m or &lt; 1.2 </span><span class="sc">\\</span><span class="st">n mean acceleration &gt;0.001m^2']</span></span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a><span class="st">shop[label='mean speed &gt; 4m/s or &lt; 1.1m/s </span><span class="sc">\\</span><span class="st">n mean step &gt; 4m or &lt; 1.2 </span><span class="sc">\\</span><span class="st">n mean acceleration &gt;0.001m^2']</span></span>
 <span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a><span class="st">shopyes[label='Yes']</span></span>
 <span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a><span class="st">shopyesshop[label='Is shopping']</span></span>
 <span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a><span class="st">shopno[label='No ']</span></span>
@@ -1028,7 +1031,7 @@ div.csl-indent {
 <span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a><span class="co">#CAMA based</span></span>
 <span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a>cama_workflow <span class="ot">&lt;-</span> <span class="fu">grViz</span>(<span class="st">"digraph{</span></span>
-<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a><span class="st">graph [layout = dot]</span></span>
+<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a><span class="st">graph [layout = dot, rankdir = LR]</span></span>
 <span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a><span class="st">node [shape = rectangle, style = filled, fillcolor = white]</span></span>
 <span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a><span class="st">build[label='Is it in a building?']</span></span>
@@ -1113,7 +1116,7 @@ The three approaches used in this study are classification based on attributes o
 <h3 class="anchored" data-anchor-id="attribut-based-classification">Attribut based classification</h3>
 <section id="training-data" class="level4">
 <h4 class="anchored" data-anchor-id="training-data">Training data</h4>
-<p>Despite extensive testing and adapting of the thresholds, it was not possible to correctly classify all activities. Based on the attributes speed, step length and acceleration, activities were hard to distinguish. 49 out of 12’886 points could not be classified and were removed before computing the confusion matrix. 7’537 points were classified correctly, which leads to an overall accuracy of 59 %. Sensitivity is highest for the class travel (0.61), specificity is highest for the class shopping (0.98). Detection rate is highest for travel (0.54). Travel and recreation were most difficult to differentiate.</p>
+<p>Despite extensive testing and adapting of the thresholds, it was not possible to correctly classify all activities. Based on the attributes speed, step length and acceleration, activities were hard to distinguish. 49 out of 12’886 points could not be classified and were removed before computing the confusion matrix. 7’526 points were classified correctly, which leads to an overall accuracy of 59 %. Sensitivity is highest for the class travel (0.61), specificity is highest for the class shopping (0.98). Detection rate is highest for travel (0.54). Travel and recreation were most difficult to differentiate.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>confusion matrix training data</summary>
@@ -1135,7 +1138,7 @@ The three approaches used in this study are classification based on attributes o
 </section>
 <section id="activity-data-saskia" class="level4">
 <h4 class="anchored" data-anchor-id="activity-data-saskia">Activity data Saskia</h4>
-<p>30 points could not be classified and were removed before computing the confusion matrix. The overall accuracy of the model for the activity data of Saskia is 33 %. Again, sensitivity is highest for travel (0.34), as well as the detection rate (0.33).</p>
+<p>30 out of 6826 points could not be classified and were removed before computing the confusion matrix. 2270 points were classified correctly, leading to an overall accuracy of the model for the activity data of Saskia of 33 %. Again, sensitivity is highest for travel (0.34), as well as the detection rate (0.33).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Confusion matrix for Saskias data</summary>
@@ -1149,7 +1152,7 @@ The three approaches used in this study are classification based on attributes o
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="index_files/figure-html/confusion%20matrix%20Saskias%20data-1.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>Confusion matrix for Saskias data. Most misclassifications occur with travel and recreation.</figcaption>
+<figcaption>Confusion matrix for Saskias data. The accuracy is 33 %. Most misclassifications occur with travel and recreation.</figcaption>
 </figure>
 </div>
 </div>
@@ -1157,7 +1160,7 @@ The three approaches used in this study are classification based on attributes o
 </section>
 <section id="activity-data-sarah" class="level4">
 <h4 class="anchored" data-anchor-id="activity-data-sarah">Activity data Sarah</h4>
-<p>51 points could not be classified and were removed before computing the confusion matrix. For Sarahs activities, the accuracy of the model is 19 %. The sensitivity for recreation is highest (0.71), the detection rate is highest for travel (0.16).</p>
+<p>51 out of 17’061 points could not be classified and were removed before computing the confusion matrix. For Sarahs activities, 3209 points were classified correctly. The accuracy of the model is 19 %. The sensitivity for recreation is highest (0.71), the detection rate is highest for travel (0.16).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Confusion matrix Sarahs data</summary>
@@ -1171,7 +1174,7 @@ The three approaches used in this study are classification based on attributes o
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="index_files/figure-html/confusion%20matrix%20Sarahs%20data-1.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>Confusion matrix for Sarahs data</figcaption>
+<figcaption>Confusion matrix for Sarahs data. The accuracy is 19 %. 95 % of the points are classified as travel.</figcaption>
 </figure>
 </div>
 </div>
@@ -1204,7 +1207,7 @@ The three approaches used in this study are classification based on attributes o
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>wordcountaddin<span class="sc">::</span><span class="fu">word_count</span>(<span class="st">"index.qmd"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 1016</code></pre>
+<pre><code>[1] 1035</code></pre>
 </div>
 </div>
 
