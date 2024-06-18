@@ -398,8 +398,8 @@ test_classification <- test_classification |>
                               & mean_acceleration < 0.003,  1 ,  0 ),
          shopping = if_else(travel %in% c( 0 ) 
                             & recreation %in% c( 0 )
-                            & mean_speed > 5 |  mean_speed < 1.1
-                            & mean_step > 5 | mean_step < 1.2
+                            & mean_speed > 4 |  mean_speed < 1.1
+                            & mean_step > 4 | mean_step < 1.2
                             & mean_acceleration > 0.01
                               ,  1 ,  0 ))
 
@@ -413,6 +413,10 @@ test_classification <- test_classification |>
   
   
 test_activities_classified <- st_join(activities_classified_sf, test_classification, left = TRUE)
+
+tmap_mode("view")
+tm_shape(test_activities_classified)+
+  tm_dots(col="ID_text")
 
 # Test classification ####
 confus <-conf_mat(data = test_activities_classified, truth = Attribute_factor, estimate = activity_factor)
