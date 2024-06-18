@@ -6,24 +6,20 @@ library(DiagrammeR)
 grViz("digraph{
 graph [layout = dot]
 node [shape = rectangle, style = filled, rankdir = LR, fillcolor = white]
-
 datatrain[label='training data Saskia', shape = folder, fillcolor = beige]
 datatestsas[label='test data Saskia', shape = folder, fillcolor = beige]
 datatestsar[label='test data Sarah', shape = folder, fillcolor = beige]
 classify[label='classify manually \\n into actual walking patterns']
-
 attribute[label='workflow attribute \\n based classification', fillcolor = aliceblue]
 derattributes[label='derive attributes']
 threshattributes[label='set thresholds based on  \\n summaries of trajectories \\n from training data']
 classifyattributes[label='classify based on thresholds']
 validate[label='validate with validation workflow']
-
 camawork[label='workflow CAMA \\n based classification', fillcolor = aliceblue]
 tlm[label='choose swissTLM3D layers, \\n which represent certain attributes']
 buf[label='create buffers']
 intersect[label='check for presence in buffers \\n position in buffers']
 camaclass[label='classify based on \\n  presence in buffers']
-
 cartwork [label ='workflow CART \\n based classification', fillcolor = aliceblue]
 join[label='join data from \\n previous workflows \\n from the training data']
 cart [label='create CART']
@@ -34,13 +30,11 @@ attribute -> derattributes
 derattributes -> threshattributes
 threshattributes -> classifyattributes
 classifyattributes -> validate
-
 camawork -> tlm
 tlm -> buf
 buf -> intersect
 intersect -> camaclass
 camaclass -> validate
-
 {derattributes intersect} -> cartwork
 cartwork -> join
 join -> cart
@@ -51,16 +45,13 @@ cart -> validate
 grViz("digraph{
 graph [layout = dot]
 node [shape = rectangle, style = filled, rankdir = LR, fillcolor = white]
-
 valwork[label='validation workflow', fillcolor = aliceblue]
 valtrain[label='apply validation steps \\n on results from \\n training data']
-
 applyattr[label='use thresholds \\n from attribute based classification \\n on test data']
 applycama[label='use classification rules \\n from CAMA based classification \\n on test data']
 applycart[label='apply CART tree to test data']
 conf[label='create confusion matix']
 acc[label='derive accuracy of classification']
-
 valwork -> {valtrain applyattr applycama applycart}
 {valtrain applyattr applycama applycart} -> {conf acc}
 }")
@@ -69,7 +60,6 @@ valwork -> {valtrain applyattr applycama applycart}
 grViz("digraph{
 graph [layout = dot]
 node [shape = rectangle, style = filled, fillcolor = white]
-
 travel[label='mean speed 1.7m/s - 4m/s and mean step 1.7m - 4m and mean acceleration < 0.003m^2']
 travelyes[label='Yes']
 traveltra[label='Is travel']
@@ -87,11 +77,9 @@ shoptra[label='Is NA']
 travel->{travelyes travelno}
 travelyes->traveltra
 travelno ->recr
-
 recr -> {recryes recrno}
 recryes -> recrtra
 recrno -> shop
-
 shop ->{shopyes shopno}
 shopyes ->shopyesshop
 shopno ->shoptra
@@ -119,11 +107,9 @@ recrtra[label='Is travel']
 build->{buildyes buildno}
 buildyes->buildshop
 buildno ->pubtrans
-
 pubtrans -> {pubtranspyes pubtranspno}
 pubtranspyes -> pubtransptra
 pubtranspno -> recr
-
 recr ->{recryes recrno}
 recryes ->recryesrec
 recrno ->recrtra
