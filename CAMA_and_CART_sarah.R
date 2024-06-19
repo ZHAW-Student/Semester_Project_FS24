@@ -86,484 +86,274 @@ rm(oev_clip)
 
 ##Workflow with Saskia's training- data ----
 ###Read activity data ----
-activities_classified_sf <-read_sf("CAMA_data/test_activities_attributiert.gpkg")
+sas_tra_activities_classified_sf <-read_sf("CAMA_data/test_activities_attributiert.gpkg")
 
-activities_classified_sf <- st_transform(activities_classified_sf, crs = 2056)
+sas_tra_activities_classified_sf <- st_transform(sas_tra_activities_classified_sf, crs = 2056)
 
 ###Join with objects -----
-activities_classified_sf<-st_join(activities_classified_sf, bodenbuf,
+sas_tra_activities_classified_sf<-st_join(sas_tra_activities_classified_sf, bodenbuf,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sas_tra_activities_classified_sf<-sas_tra_activities_classified_sf |> 
   rename(obj_boden= objektart)
 
-activities_classified_sf<-st_join(activities_classified_sf, nutzungsbuf ,
+sas_tra_activities_classified_sf<-st_join(sas_tra_activities_classified_sf, nutzungsbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sas_tra_activities_classified_sf<-sas_tra_activities_classified_sf |> 
   rename(obj_nutzung= objektart)
 
-activities_classified_sf<-st_join(activities_classified_sf, strassenbuf ,
+sas_tra_activities_classified_sf<-st_join(sas_tra_activities_classified_sf, strassenbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sas_tra_activities_classified_sf<-sas_tra_activities_classified_sf |> 
   rename(obj_strassen= objektart)
 
-activities_classified_sf<-st_join(activities_classified_sf, oevbuf ,
+sas_tra_activities_classified_sf<-st_join(sas_tra_activities_classified_sf, oevbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sas_tra_activities_classified_sf<-sas_tra_activities_classified_sf |> 
   rename(obj_oev= objektart)
 
-activities_classified_sf<-st_join(activities_classified_sf, gebaeude_clip ,
+sas_tra_activities_classified_sf<-st_join(sas_tra_activities_classified_sf, gebaeude_clip ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sas_tra_activities_classified_sf<-sas_tra_activities_classified_sf |> 
   rename(obj_geb= objektart)
 
-activities_classified_sf = subset(activities_classified_sf,
+sas_tra_activities_classified_sf = subset(sas_tra_activities_classified_sf,
                                   select = -c(uuid.x...9,uuid.y...11, uuid.x...13, uuid.y...15,uuid ))
 
-st_write(activities_classified_sf, dsn="CAMA_data/activities cama_objects.gpkg")
-
-###Reread object-data ----
-activities_with_objects<-read_sf("CAMA_data/activities cama_objects.gpkg")
-
 ###Create presence/absence information for objects ----
-activities_with_objects$recreation_b <- if_else(is.na(activities_with_objects$obj_boden == TRUE) , FALSE, TRUE)
+sas_tra_activities_classified_sf$recreation_b <- if_else(is.na(sas_tra_activities_classified_sf$obj_boden == TRUE) , FALSE, TRUE)
 
-activities_with_objects$recreation_n <- if_else(is.na(activities_with_objects$obj_nutzung == TRUE) , FALSE, TRUE)
+sas_tra_activities_classified_sf$recreation_n <- if_else(is.na(sas_tra_activities_classified_sf$obj_nutzung == TRUE) , FALSE, TRUE)
 
-activities_with_objects$recreation_s <- if_else(is.na(activities_with_objects$obj_strassen == TRUE) , FALSE, TRUE)
+sas_tra_activities_classified_sf$recreation_s <- if_else(is.na(sas_tra_activities_classified_sf$obj_strassen == TRUE) , FALSE, TRUE)
 
-activities_with_objects<-activities_with_objects |> 
+sas_tra_activities_classified_sf<-sas_tra_activities_classified_sf |> 
   mutate(recreation = case_when(recreation_b == TRUE ~ "TRUE", 
                                 recreation_n == TRUE ~ "TRUE", 
                                 recreation_s == TRUE ~ "TRUE"))
 
-activities_with_objects$recreation[is.na(activities_with_objects$recreation)] <- "FALSE" 
+sas_tra_activities_classified_sf$recreation[is.na(sas_tra_activities_classified_sf$recreation)] <- "FALSE" 
 
-activities_with_objects$recreation<-as.logical(activities_with_objects$recreation)
+sas_tra_activities_classified_sf$recreation<-as.logical(sas_tra_activities_classified_sf$recreation)
 
-activities_with_objects$oev <- if_else(is.na(activities_with_objects$obj_oev== TRUE)
+sas_tra_activities_classified_sf$oev <- if_else(is.na(sas_tra_activities_classified_sf$obj_oev== TRUE)
                                        , FALSE, TRUE)
 
-activities_with_objects$gebaeude <- if_else(is.na(activities_with_objects$obj_geb)
+sas_tra_activities_classified_sf$gebaeude <- if_else(is.na(sas_tra_activities_classified_sf$obj_geb)
                                             == TRUE , FALSE, TRUE)    
-activities_with_objects<-activities_with_objects[,c(1:7,13,17:19)]
+sas_tra_activities_classified_sf<-sas_tra_activities_classified_sf[,c(1:7,13,17:19)]
 
 ### Classification ----
-test_classification <- activities_with_objects |> 
+sas_tra_classification <- sas_tra_activities_classified_sf |> 
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
                     if_else(oev == TRUE, "travel",
                     if_else(recreation == TRUE, "recreation", "travel"),NA)))
 
-test_classification <- test_classification |> 
+sas_tra_classification <- sas_tra_classification |> 
   mutate(activity_factor = as.factor(activity)) 
-test_classification <- test_classification |> 
+sas_tra_classification <- sas_tra_classification |> 
   mutate(Attribute_factor = as.factor(Attribut))#change character to factor for confusion matrix
 
-st_write(test_classification, dsn="CAMA_data/ cama_classification_results_saskia_training.gpkg")#export classification results
+#st_write(sas_tra_test_classification, dsn="CAMA_data/ cama_classification_results_saskia_training.gpkg")#export classification results
 
 ###Confusion matrix ----
-test_classification <-na.omit(test_classification)
-confus <-conf_mat(data = test_classification, truth = Attribute_factor, 
+sas_tra_classification <-na.omit(sas_tra_classification)
+confus_sas_tra_cama <-conf_mat(data = sas_tra_classification, truth = Attribute_factor, 
                   estimate = activity_factor)
 
-autoplot(confus, type="heatmap")+
+autoplot(confus_sas_tra_cama, type="heatmap")+
   scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
 ###Compute model accuracy ----
-confusionMatrix(test_classification$Attribute_factor, test_classification$activity_factor)
+confusionMatrix(sas_tra_classification$Attribute_factor, sas_tra_classification$activity_factor)
 
-
-###Extract single trajectories----
-traj1 <- filter(test_classification, ID == "test_1")
-traj2 <- filter(test_classification, ID == "test_2")
-traj3 <- filter(test_classification, ID == "test_3")
-traj4 <- filter(test_classification, ID == "test_4")
-traj5 <- filter(test_classification, ID == "test_5")
-traj6 <- filter(test_classification, ID == "test_6")
-traj7 <- filter(test_classification, ID == "test_7")
-traj8 <- filter(test_classification, ID == "test_8")
-traj9 <- filter(test_classification, ID == "test_9")
-traj10 <- filter(test_classification, ID == "test_10")
-traj11 <- filter(test_classification, ID == "test_11")
-traj12 <- filter(test_classification, ID == "test_12")
-
-###Plot single trajectories with segmentation----
-traj_plot1 <- ggplot(traj1, aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot2 <- ggplot(traj2,  aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot3 <- ggplot(traj3, aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot4 <- ggplot(traj4,  aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot5 <- ggplot(traj5, aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot6 <- ggplot(traj6, aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot7 <- ggplot(traj7,  aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot8 <- ggplot(traj8,  aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction") 
-
-traj_plot9 <- ggplot(traj9,  aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot10 <- ggplot(traj10,   aes(lat, lon, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot11 <- ggplot(traj11,  aes(lat, lon, colour = activity))+
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot12 <- ggplot(traj12,  aes(lat, lon, colour = activity))+
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot1
-traj_plot2
-traj_plot3
-traj_plot4
-traj_plot5
-traj_plot6
-traj_plot7
-traj_plot8
-traj_plot9
-traj_plot10
-traj_plot11
-traj_plot12
 
 ##Workflow with Saskia's test- data ----
 ###read activity data  ----
-activities_classified_sf <-read_csv("CAMA_data/activities_saskia_attributiert.csv")
-activities_classified_sf$ts_POSIXct <-as.POSIXct(activities_classified_sf$ts_POSIXct)
+sas_tes_activities_classified_sf <-read_csv("CAMA_data/activities_saskia_attributiert.csv")
+sas_tes_activities_classified_sf$ts_POSIXct <-as.POSIXct(sas_tes_activities_classified_sf$ts_POSIXct)
 
-activities_classified_sf <-st_as_sf(activities_classified_sf, 
+sas_tes_activities_classified_sf <-st_as_sf(sas_tes_activities_classified_sf, 
                           coords = c("lon", "lat"), crs = 4326 , remove = FALSE) 
 
-activities_classified_sf <- st_transform(activities_classified_sf, crs = 2056)
+sas_tes_activities_classified_sf <- st_transform(sas_tes_activities_classified_sf, crs = 2056)
 
 ###Join with objects -----
-activities_classified_sf<-st_join(activities_classified_sf, bodenbuf,
+sas_tes_activities_classified_sf<-st_join(sas_tes_activities_classified_sf, bodenbuf,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sas_tes_activities_classified_sf<-sas_tes_activities_classified_sf |> 
   rename(obj_boden= objektart)
 
-activities_classified_sf<-st_join(activities_classified_sf, nutzungsbuf ,
+sas_tes_activities_classified_sf<-st_join(sas_tes_activities_classified_sf, nutzungsbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sas_tes_activities_classified_sf<-sas_tes_activities_classified_sf |> 
   rename(obj_nutzung= objektart)
 
-activities_classified_sf<-st_join(activities_classified_sf, strassenbuf ,
+sas_tes_activities_classified_sf<-st_join(sas_tes_activities_classified_sf, strassenbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sas_tes_activities_classified_sf<-sas_tes_activities_classified_sf |> 
   rename(obj_strassen= objektart)
 
-activities_classified_sf<-st_join(activities_classified_sf, oevbuf ,
+sas_tes_activities_classified_sf<-st_join(sas_tes_activities_classified_sf, oevbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sas_tes_activities_classified_sf<-sas_tes_activities_classified_sf |> 
   rename(obj_oev= objektart)
 
-activities_classified_sf<-st_join(activities_classified_sf, gebaeude_clip ,
+sas_tes_activities_classified_sf<-st_join(sas_tes_activities_classified_sf, gebaeude_clip ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sas_tes_activities_classified_sf<-sas_tes_activities_classified_sf |> 
   rename(obj_geb= objektart)
 
-activities_classified_sf = subset(activities_classified_sf,
+sas_tes_activities_classified_sf = subset(sas_tes_activities_classified_sf,
                           select = -c(fid,uuid.x...10,uuid.y...12, uuid.x...14,
                                       uuid.y...16,uuid))
 
-st_write(activities_classified_sf,
-         dsn="CAMA_data/activities cama_objects_saskia_test.gpkg")
-
-###Reread object-data ----
-activities_with_objects<-read_sf("CAMA_data/activities cama_objects_saskia_test.gpkg")
-
 ###Create presence/absence information for objects ----
-activities_with_objects$recreation_b <- if_else(is.na(activities_with_objects$obj_boden == TRUE) , FALSE, TRUE)
+sas_tes_activities_classified_sf$recreation_b <- if_else(is.na(sas_tes_activities_classified_sf$obj_boden == TRUE) , FALSE, TRUE)
 
-activities_with_objects$recreation_n <- if_else(is.na(activities_with_objects$obj_nutzung == TRUE) , FALSE, TRUE)
+sas_tes_activities_classified_sf$recreation_n <- if_else(is.na(sas_tes_activities_classified_sf$obj_nutzung == TRUE) , FALSE, TRUE)
 
-activities_with_objects$recreation_s <- if_else(is.na(activities_with_objects$obj_strassen == TRUE) , FALSE, TRUE)
+sas_tes_activities_classified_sf$recreation_s <- if_else(is.na(sas_tes_activities_classified_sf$obj_strassen == TRUE) , FALSE, TRUE)
 
-activities_with_objects<-activities_with_objects |> 
+sas_tes_activities_classified_sf<-sas_tes_activities_classified_sf |> 
   mutate(recreation = case_when(recreation_b == TRUE ~ "TRUE",
                                 recreation_n == TRUE ~ "TRUE", 
                                 recreation_s == TRUE ~ "TRUE"))
 
-activities_with_objects$recreation[is.na(activities_with_objects$recreation)] <- "FALSE" 
+sas_tes_activities_classified_sf$recreation[is.na(sas_tes_activities_classified_sf$recreation)] <- "FALSE" 
 
-activities_with_objects$recreation<-as.logical(activities_with_objects$recreation)
+sas_tes_activities_classified_sf$recreation<-as.logical(sas_tes_activities_classified_sf$recreation)
 
-activities_with_objects$oev <- if_else(is.na(activities_with_objects$obj_oev== TRUE) , FALSE, TRUE)
+sas_tes_activities_classified_sf$oev <- if_else(is.na(sas_tes_activities_classified_sf$obj_oev== TRUE) , FALSE, TRUE)
 
-activities_with_objects$gebaeude <- if_else(is.na(activities_with_objects$obj_geb) == TRUE , FALSE, TRUE)    
-activities_with_objects<-activities_with_objects[,c(1:7,13,17:19)]
+sas_tes_activities_classified_sf$gebaeude <- if_else(is.na(sas_tes_activities_classified_sf$obj_geb) == TRUE , FALSE, TRUE)    
+sas_tes_activities_classified_sf<-sas_tes_activities_classified_sf[,c(1:7,13,17:19)]
 
 ###Classification ----
-classification <- activities_with_objects |> 
+sas_test_classification <- sas_tes_activities_with_objects |> 
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
                             if_else(oev == TRUE, "travel",
                             if_else(recreation == TRUE, "recreation", "travel"),NA)))
 
 
-classification <- classification |> 
+sas_test_classification <- sas_test_classification |> 
   mutate(activity_factor = as.factor(activity)) 
-classification <-classification |> 
+sas_test_classification <-sas_test_classification |> 
   mutate(Attribute_factor = as.factor(Attribut))#change character to factor for confusion matrix
 
-st_write(classification, dsn="CAMA_data/ cama_classification_results_saskia_test.gpkg")#export classification results
+#st_write(sas_test_classification, dsn="CAMA_data/ cama__results_saskia_test.gpkg")#export classification results
 
 ###Confusion matrix ----
-classification<-na.omit(classification)
-confus <-conf_mat(data = classification, truth = Attribute_factor,
+sas_test_classification<-na.omit(sas_test_classification)
+confus_sas_tes_cama <-conf_mat(data = sas_test_classification, truth = Attribute_factor,
                   estimate = activity_factor)
 
-autoplot(confus, type="heatmap")+
+autoplot(confus_sas_tes, type="heatmap")+
   scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
 ###Compute model accuracy ----
-confusionMatrix(classification$Attribute_factor, classification$activity_factor)
-
-###Extract single trajectories----
-traj1 <- filter(classification, ID == "saskia__1")
-traj2 <- filter(classification, ID == "saskia__2")
-traj3 <- filter(classification, ID == "saskia__3")
-traj4 <- filter(classification, ID == "saskia__4")
-traj5 <- filter(classification, ID == "saskia__5")
-traj6 <- filter(classification, ID == "saskia__6")
-
-###Plot single trajectories with segmentation----
-
-traj_plot1 <- ggplot(traj1, aes( lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot2 <- ggplot(traj2,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot3 <- ggplot(traj3, aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot4 <- ggplot(traj4,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot5 <- ggplot(traj5, aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot6 <- ggplot(traj6, aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot1
-traj_plot2
-traj_plot3
-traj_plot4
-traj_plot5
-traj_plot6
+confusionMatrix(sas_test_classification$Attribute_factor, sas_test_classification$activity_factor)
 
 ##Workflow with Sarah's test- data ----
 ###Read activity data  ----
-activities_classified_sf <-read_sf("CAMA_data/activities_sarah_classified.gpkg")
+sar_tes_activities_classified_sf <-read_sf("CAMA_data/activities_sarah_classified.gpkg")
 
-activities_classified_sf <- st_transform(activities_classified_sf, crs = 2056)
+sar_tes_activities_classified_sf <- st_transform(sar_tes_activities_classified_sf, crs = 2056)
 
 ###Join with objects -----
-activities_classified_sf<-st_join(activities_classified_sf, bodenbuf,
+sar_tes_activities_classified_sf<-st_join(sar_tes_activities_classified_sf, bodenbuf,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sar_tes_activities_classified_sf<-sar_tes_activities_classified_sf |> 
   rename(obj_boden= objektart)
 
-activities_classified_sf<-st_join(activities_classified_sf, nutzungsbuf ,
+sar_tes_activities_classified_sf<-st_join(sar_tes_activities_classified_sf, nutzungsbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sar_tes_activities_classified_sf<-sar_tes_activities_classified_sf |> 
   rename(obj_nutzung= objektart)
 
-activities_classified_sf<-st_join(activities_classified_sf, strassenbuf ,
+sar_tes_activities_classified_sf<-st_join(sar_tes_activities_classified_sf, strassenbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sar_tes_activities_classified_sf<-sar_tes_activities_classified_sf |> 
   rename(obj_strassen= objektart)
 
-activities_classified_sf<-st_join(activities_classified_sf, oevbuf ,
+sar_tes_activities_classified_sf<-st_join(sar_tes_activities_classified_sf, oevbuf ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sar_tes_activities_classified_sf<-sar_tes_activities_classified_sf |> 
   rename(obj_oev= objektart)
 
-activities_classified_sf<-st_join(activities_classified_sf, gebaeude_clip ,
+sar_tes_activities_classified_sf<-st_join(sar_tes_activities_classified_sf, gebaeude_clip ,
                                   join=st_within,left=TRUE, largest=TRUE)
 
-activities_classified_sf<-activities_classified_sf |> 
+sar_tes_activities_classified_sf<-sar_tes_activities_classified_sf |> 
   rename(obj_geb= objektart)
 
-activities_classified_sf = subset(activities_classified_sf, 
+sar_tes_activities_classified_sf = subset(sar_tes_activities_classified_sf, 
                                   select = -c(uuid.x...9,uuid.y...11, uuid.x...13,
                                               uuid.y...15,uuid ))
 
-st_write(activities_classified_sf, dsn="CAMA_data/activities cama_objects_sarah_test.gpkg")
-
-###Reread object-data ----
-activities_with_objects<-read_sf("CAMA_data/activities cama_objects_sarah_test.gpkg")
-
 ###Create presence/absence information for objects ----
-activities_with_objects$recreation_b <- if_else(is.na(activities_with_objects$obj_boden == TRUE) , FALSE, TRUE)
+sar_tes_activities_classified_sf$recreation_b <- if_else(is.na(sar_tes_activities_classified_sf$obj_boden == TRUE) , FALSE, TRUE)
 
-activities_with_objects$recreation_n <- if_else(is.na(activities_with_objects$obj_nutzung == TRUE) , FALSE, TRUE)
+sar_tes_activities_classified_sf$recreation_n <- if_else(is.na(sar_tes_activities_classified_sf$obj_nutzung == TRUE) , FALSE, TRUE)
 
-activities_with_objects$recreation_s <- if_else(is.na(activities_with_objects$obj_strassen == TRUE) , FALSE, TRUE)
+sar_tes_activities_classified_sf$recreation_s <- if_else(is.na(sar_tes_activities_classified_sf$obj_strassen == TRUE) , FALSE, TRUE)
 
-activities_with_objects<-activities_with_objects |> 
+sar_tes_activities_classified_sf<-sar_tes_activities_classified_sf |> 
   mutate(recreation = case_when(recreation_b == TRUE ~ "TRUE", 
                                 recreation_n == TRUE ~ "TRUE", 
                                 recreation_s == TRUE ~ "TRUE"))
 
-activities_with_objects$recreation[is.na(activities_with_objects$recreation)] <- "FALSE" 
+sar_tes_activities_classified_sf$recreation[is.na(sar_tes_activities_classified_sf$recreation)] <- "FALSE" 
 
-activities_with_objects$recreation<-as.logical(activities_with_objects$recreation)
+sar_tes_activities_classified_sf$recreation<-as.logical(sar_tes_activities_classified_sf$recreation)
 
-activities_with_objects$oev <- if_else(is.na(activities_with_objects$obj_oev== TRUE) , FALSE, TRUE)
+sar_tes_activities_classified_sf$oev <- if_else(is.na(sar_tes_activities_classified_sf$obj_oev== TRUE) , FALSE, TRUE)
 
-activities_with_objects$gebaeude <- if_else(is.na(activities_with_objects$obj_geb) == TRUE , FALSE, TRUE)    
-activities_with_objects<-activities_with_objects[,c(1:7,13,17:19)]
+sar_tes_activities_classified_sf$gebaeude <- if_else(is.na(sar_tes_activities_classified_sf$obj_geb) == TRUE , FALSE, TRUE)    
+sar_tes_activities_classified_sf<-sar_tes_activities_classified_sf[,c(1:7,13,17:19)]
 
 ###Classification ----
-classification <- activities_with_objects |> 
+sar_test_classification <- sar_tes_activities_classified_sf |> 
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
                     if_else(oev == TRUE, "travel",
                     if_else(recreation == TRUE, "recreation", "travel"),NA)))
 
 
-classification <- classification |> 
+sar_test_classification <- sar_test_classification |> 
   mutate(activity_factor = as.factor(activity)) 
-classification <-classification |> 
+sar_test_classification <-sar_test_classification |> 
   mutate(Attribute_factor = as.factor(Attribut))#change character to factor for confusion matrix
 
-st_write(classification, dsn="CAMA_data/ cama_classification_results_sarah.gpkg")#export classification results
+st_write(sar_test_classification, dsn="CAMA_data/ cama_classification_results_sarah.gpkg")#export sar_test_classification results
 
 ###Confusion matrix ----
-classification<-na.omit(classification)
-confus <-conf_mat(data = classification, truth = Attribute_factor, estimate = activity_factor)
+sar_test_classification<-na.omit(sar_test_classification)
+confus_sar_tes_cama <-conf_mat(data = sar_test_classification, truth = Attribute_factor, estimate = activity_factor)
 
-autoplot(confus, type="heatmap")+
+autoplot(confus_sar_tes_cama, type="heatmap")+
   scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
 ###Compute model accuracy ----
-confusionMatrix(classification$Attribute_factor, classification$activity_factor)
-
-###Extract single trajectories----
-traj1 <- filter(classification, ID == "sarah__1")
-traj2 <- filter(classification, ID == "sarah__2")
-traj3 <- filter(classification, ID == "sarah__3")
-traj4 <- filter(classification, ID == "sarah__4")
-traj5 <- filter(classification, ID == "sarah__5")
-traj6 <- filter(classification, ID == "sarah__6")
-traj7 <- filter(classification, ID == "sarah__7")
-traj8 <- filter(classification, ID == "sarah__8")
-traj9 <- filter(classification, ID == "sarah__9")
-traj10 <- filter(classification, ID == "sarah__10")
-traj11 <- filter(classification, ID == "sarah__11")
-traj12 <- filter(classification, ID == "sarah__12")
-
-### plot single trajectories with segmentation----
-
-traj_plot1 <- ggplot(traj1, aes( lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot2 <- ggplot(traj2,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot3 <- ggplot(traj3, aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot4 <- ggplot(traj4,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot5 <- ggplot(traj5, aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot6 <- ggplot(traj6, aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot7 <- ggplot(traj7,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot8 <- ggplot(traj8,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut)) +
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot9 <- ggplot(traj9,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot10 <- ggplot(traj10,   aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot11 <- ggplot(traj11,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot12 <- ggplot(traj12,  aes(lon, lat, colour = activity)) +
-  geom_point(aes(shape=Attribut))+
-  labs(shape="Truth", colour="Prediction")
-
-traj_plot1
-traj_plot2
-traj_plot3
-traj_plot4
-traj_plot5
-traj_plot6
-traj_plot7
-traj_plot8
-traj_plot9
-traj_plot10
-traj_plot11
-traj_plot12
+confusionMatrix(sar_test_classification$Attribute_factor, sar_test_classification$activity_factor)
 
 #CART analysis ----
 ##Workflow based on Saskia's training- data ----
@@ -577,13 +367,12 @@ activities_attributes_sf <-st_as_sf(activities_attributes,
 
 activities_attributes_sf <- st_transform(activities_attributes_sf, crs = 2056)
 
-cama_class_saskia_train<-read_sf("CAMA_data/ cama_classification_results_saskia_training.gpkg")
 
 activities_attributes_sf  <-activities_attributes_sf [,c(1:26,30:32)]
 #remove non-required columns
 
 ###Join data from CAMA and walking- attributes -----
-activities_sas_train<-st_join(activities_attributes_sf,cama_class_saskia_train)
+activities_sas_train<-st_join(activities_attributes_sf,sas_tra_classification)
 
 activities_sas_train$Attribute_factor.x <-as.factor(activities_sas_train$Attribute_factor.x)
 
@@ -617,7 +406,6 @@ confusionMatrix(activities_sas_train$Attribute_factor.x, activities_sas_train$pr
 
 ##Make predictions on the test data from Saskia ----
 ###Import movement attributes and results of CAMA analysis and transform them into spatial objects ----
-activities_with_objects_sas_test<-read_sf("CAMA_data/ cama_classification_results_saskia_test.gpkg")
 
 activities_attributes_sas_test <-read_csv("activities_saskia_with_attributes_classified_new.csv")
 activities_attributes_sas_test$ts_POSIXct <-as.POSIXct(activities_attributes_sas_test$ts_POSIXct)
@@ -631,7 +419,7 @@ activities_attributes_sf_sas_test  <- st_transform(activities_attributes_sf_sas_
 activities_attributes_sf_sas_test <-activities_attributes_sf_sas_test[,c(1:27,31:33)]##remove non-required columns
 
 ###Join data from CAMA and walking- attributes -----
-activities_sas_test<-st_join(activities_attributes_sf_sas_test ,activities_with_objects_sas_test)
+activities_sas_test<-st_join(activities_attributes_sf_sas_test ,sas_test_classification)
 
 activities_sas_test$Attribute_factor.x <-as.factor(activities_sas_test$Attribute_factor.x)
 
@@ -655,7 +443,6 @@ confusionMatrix(activities_sas_test$Attribute_factor.x, activities_sas_test$pred
 ##Make predictions on the test data from Sarah ----
 ###Import movement attributes and results of CAMA analysis and transform them into spatial objects
 
-activities_with_objects_sar_test<-read_sf("CAMA_data/ cama_classification_results_sarah.gpkg")
 activities_attributes_sarah <-read_csv("activities_sarah_with_attributes_classified_new.csv")
 activities_attributes_sarah$ts_POSIXct <-as.POSIXct(activities_attributes_sarah$ts_POSIXct)
 
@@ -669,7 +456,7 @@ activities_attributes_sarah_sf <- st_transform(activities_attributes_sarah_sf,
 activities_attributes_sarah_sf <-activities_attributes_sarah_sf[,c(1:27,31:33)]##remove non-required columns
 
 ###Join data from CAMA and walking- attributes -----
-activities_sar_test<-st_join(activities_attributes_sarah_sf,activities_with_objects_sar_test)
+activities_sar_test<-st_join(activities_attributes_sarah_sf,sar_test_classification)
 
 activities_sar_test$Attribute_factor.x <-as.factor(activities_sar_test$Attribute_factor.x)
 
