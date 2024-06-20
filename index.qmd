@@ -1412,9 +1412,9 @@ The main question this paper attempts to answer is whether it is possible to dif
 
 The aim of this paper is to test and compare different approaches to detect walking patterns. The different patterns that should be able to be distinguished are walking for recreational purposes, walking for commuting and shopping. The underlying idea is that the pattern of these walking types differs in their attributes and the environment that there are based in. It was already shown that a differentiation between transit and walking based on speed is possible [@kim_new_2012]. Also, outdoor walking activities are generally longer, more continuous and faster with the walking duration being the most important attribute for classification [@baroudi_classification_2024].\
 Based on walking data tracked with the Strava app, we want to answer the following research questions:\
-- How well it possible to derive the type of activity from movement data considering the attributes sinuosity, speed and visited locations?\
+- How well it possible to derive the type of activity from movement data considering the attributes sinuosity, speed, sinuosity and visited locations?\
 - Which type of analytical approach performs best in differentiating between the different activities?\
-- Does the performance of the analytical concepts differ when applied on trajectories recorded by different people?\
+- How does the performance of the analytical concepts differ when applied on trajectories recorded by different people?\
 The three approaches used in this study are classification based on attributes of the trajectory, CAMA-analysis and classification based on CART tree. The approaches are described in detail in the chapter material and methods. The following figure show the workflow for the three classification methods. \
 ![workflow](overall.png)
 
@@ -1438,6 +1438,12 @@ For the attribute-based classification, the time-lag and distance between single
 text \
 
 ![workflow](cama.png)
+
+### Validation
+
+text \
+
+![workflow](validation.png)
 
 ### CART classification
 text
@@ -1487,11 +1493,6 @@ autoplot(confus_sarah, type="heatmap")+
 
 ```
 
-### Validation
-
-text \
-
-![workflow](validation.png)
 
 ## Discussion
 

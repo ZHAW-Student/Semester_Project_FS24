@@ -365,7 +365,7 @@ text(model_sas_train, cex=0.8,use.n = TRUE, xpd = TRUE)
 
 ###See whether tree needs to be pruned ----
 model_sas_train$cptable
-#plotcp(model_sas_train)#no pruning needed
+plotcp(model_sas_train)#no pruning needed
 
 ###Make prediction on original data for confusion matrix----
 pred_model_sas_train<- predict(model_sas_train, type="class")
