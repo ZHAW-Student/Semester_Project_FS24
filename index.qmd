@@ -1170,10 +1170,6 @@ model_sas_train <-rpart(Attribute_factor.x~ speedMean+stepMean+acceleration+ rec
 plot(model_sas_train)
 text(model_sas_train, cex=0.8,use.n = TRUE, xpd = TRUE)
 
-###See whether tree needs to be pruned ----
-model_sas_train$cptable
-#plotcp(model_sas_train)#no pruning needed
-
 ###Make prediction on original data for confusion matrix----
 pred_model_sas_train<- predict(model_sas_train, type="class")
 activities_sas_train$pred<-pred_model_sas_train
