@@ -911,7 +911,7 @@ sas_tra_activities_classified_sf<-sas_tra_activities_classified_sf |>
 sas_tra_activities_classified_sf<-st_join(sas_tra_activities_classified_sf, oevbuf , join=st_within,left=TRUE, largest=TRUE)
 
 sas_tra_activities_classified_sf<-sas_tra_activities_classified_sf |> 
-  rename(obj_oev= objektart)
+  rename(obj_pub_trans= objektart)
 
 sas_tra_activities_classified_sf<-st_join(sas_tra_activities_classified_sf, gebaeude_clip ,join=st_within,left=TRUE, largest=TRUE)
 
@@ -937,7 +937,7 @@ sas_tra_activities_classified_sf$recreation[is.na(sas_tra_activities_classified_
 
 sas_tra_activities_classified_sf$recreation<-as.logical(sas_tra_activities_classified_sf$recreation)
 
-sas_tra_activities_classified_sf$oev <- if_else(is.na(sas_tra_activities_classified_sf$obj_oev== TRUE)
+sas_tra_activities_classified_sf$pub_trans <- if_else(is.na(sas_tra_activities_classified_sf$obj_pub_trans== TRUE)
                                        , FALSE, TRUE)
 
 sas_tra_activities_classified_sf$gebaeude <- if_else(is.na(sas_tra_activities_classified_sf$obj_geb) == TRUE , FALSE, TRUE)    
@@ -946,7 +946,7 @@ sas_tra_activities_classified_sf<-sas_tra_activities_classified_sf[,c(1:8,17:19)
 ### Classification ----
 sas_tra_classification <- sas_tra_activities_classified_sf |> 
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
-                    if_else(oev == TRUE, "travel",
+                    if_else(pub_trans == TRUE, "travel",
                     if_else(recreation == TRUE, "recreation", "travel"),NA)))
 
 sas_tra_classification <- sas_tra_classification |> 
@@ -993,7 +993,7 @@ sas_tes_activities_classified_sf<-sas_tes_activities_classified_sf |>
 sas_tes_activities_classified_sf<-st_join(sas_tes_activities_classified_sf, oevbuf , join=st_within,left=TRUE, largest=TRUE)
 
 sas_tes_activities_classified_sf<-sas_tes_activities_classified_sf |> 
-  rename(obj_oev= objektart)
+  rename(obj_pub_trans= objektart)
 
 sas_tes_activities_classified_sf<-st_join(sas_tes_activities_classified_sf, gebaeude_clip , join=st_within,left=TRUE, largest=TRUE)
 
@@ -1020,7 +1020,7 @@ sas_tes_activities_classified_sf$recreation[is.na(sas_tes_activities_classified_
 
 sas_tes_activities_classified_sf$recreation<-as.logical(sas_tes_activities_classified_sf$recreation)
 
-sas_tes_activities_classified_sf$oev <- if_else(is.na(sas_tes_activities_classified_sf$obj_oev== TRUE) , FALSE, TRUE)
+sas_tes_activities_classified_sf$pub_trans <- if_else(is.na(sas_tes_activities_classified_sf$obj_pub_trans== TRUE) , FALSE, TRUE)
 
 sas_tes_activities_classified_sf$gebaeude <- if_else(is.na(sas_tes_activities_classified_sf$obj_geb) == TRUE , FALSE, TRUE)    
 sas_tes_activities_classified_sf<-sas_tes_activities_classified_sf[,c(1:8,17:19)]
@@ -1028,7 +1028,7 @@ sas_tes_activities_classified_sf<-sas_tes_activities_classified_sf[,c(1:8,17:19)
 ###Classification ----
 sas_test_classification <- sas_tes_activities_classified_sf|> 
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
-                            if_else(oev == TRUE, "travel",
+                            if_else(pub_trans == TRUE, "travel",
                             if_else(recreation == TRUE, "recreation", "travel"),NA)))
 
 
@@ -1071,7 +1071,7 @@ sar_tes_activities_classified_sf<-sar_tes_activities_classified_sf |>
 sar_tes_activities_classified_sf<-st_join(sar_tes_activities_classified_sf, oevbuf , join=st_within,left=TRUE, largest=TRUE)
 
 sar_tes_activities_classified_sf<-sar_tes_activities_classified_sf |> 
-  rename(obj_oev= objektart)
+  rename(obj_pub_trans= objektart)
 
 sar_tes_activities_classified_sf<-st_join(sar_tes_activities_classified_sf, gebaeude_clip ,join=st_within,left=TRUE, largest=TRUE)
 
@@ -1097,7 +1097,7 @@ sar_tes_activities_classified_sf$recreation[is.na(sar_tes_activities_classified_
 
 sar_tes_activities_classified_sf$recreation<-as.logical(sar_tes_activities_classified_sf$recreation)
 
-sar_tes_activities_classified_sf$oev <- if_else(is.na(sar_tes_activities_classified_sf$obj_oev== TRUE) , FALSE, TRUE)
+sar_tes_activities_classified_sf$pub_trans <- if_else(is.na(sar_tes_activities_classified_sf$obj_pub_trans== TRUE) , FALSE, TRUE)
 
 sar_tes_activities_classified_sf$gebaeude <- if_else(is.na(sar_tes_activities_classified_sf$obj_geb) == TRUE , FALSE, TRUE)    
 sar_tes_activities_classified_sf<-sar_tes_activities_classified_sf[,c(1:8,17:19)]
@@ -1105,7 +1105,7 @@ sar_tes_activities_classified_sf<-sar_tes_activities_classified_sf[,c(1:8,17:19)
 ###Classification ----
 sar_test_classification <- sar_tes_activities_classified_sf |> 
   mutate(activity = if_else(gebaeude == TRUE, "shopping", 
-                    if_else(oev == TRUE, "travel",
+                    if_else(pub_trans == TRUE, "travel",
                     if_else(recreation == TRUE, "recreation", "travel"),NA)))
 
 
@@ -1148,7 +1148,7 @@ activities_sas_train$Attribute_factor.x <-as.factor(activities_sas_train$Attribu
 
 ###Create tree ----
 set.seed(6832)
-model_sas_train <-rpart(Attribute_factor.x~ speedMean+stepMean+acceleration+ recreation + oev + gebaeude, data=activities_sas_train, method= "class")
+model_sas_train <-rpart(Attribute_factor.x~ speedMean+stepMean+acceleration+ recreation + pub_trans + gebaeude, data=activities_sas_train, method= "class")
 
 ###Make prediction on original data for confusion matrix----
 pred_model_sas_train<- predict(model_sas_train, type="class")
@@ -1418,7 +1418,7 @@ text
 
 Despite extensive testing and adapting of the thresholds, it was not possible to correctly classify all activities. 49 out of 12'886 points could not be classified and were removed before computing the confusion matrix. 7'526 points were classified correctly, which leads to an overall accuracy of 59 %. Sensitivity is highest for the class travel (0.61). Detection rate is highest for travel (0.54).
 
-```{r confusion matrix, message=FALSE, results='hide', fig.cap="Confusion matrix for the training data. The overall accuracy is 59 %."}
+```{r confusion matrix, message=FALSE, results='hide', fig.cap="Confusion matrix for the training data."}
 #| code-summary: confusion matrix training data
 # plot confusion matrix for test data
 autoplot(confus_training, type="heatmap")+
@@ -1431,7 +1431,7 @@ autoplot(confus_training, type="heatmap")+
 
 30 out of 6826 points could not be classified and were removed before computing the confusion matrix. 2270 points were classified correctly, leading to an overall accuracy of the model for Saskia's activity data of 33 %. Again, sensitivity is highest for travel (0.34), as well as the detection rate (0.33).
 
-```{r confusion matrix Saskias data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskia's data. The accuracy is 33 %. Most misclassifications occur with travel and recreation."}
+```{r confusion matrix Saskias data, message=FALSE, results='hide', fig.cap="Confusion matrix for the test data. "}
 #| code-summary: Confusion matrix for Saskias data
 # plot confusion matrix
 autoplot(confus_saskia, type="heatmap")+
@@ -1444,7 +1444,7 @@ autoplot(confus_saskia, type="heatmap")+
 
 51 out of 17'061 points could not be classified and were removed before computing the confusion matrix. For Sarah's activities, 3209 points are classified correctly. The accuracy of the model is 19 %. The sensitivity for recreation is highest (0.71), the detection rate is highest for travel (0.16).  95 % of the points are classified as travel.
 
-```{r confusion matrix Sarah's data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarah's data."}
+```{r confusion matrix Sarah's data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarah's test data."}
 #| code-summary: Confusion matrix Sarahs data
 # plot confusion matrix
 autoplot(confus_sarah, type="heatmap")+
@@ -1462,7 +1462,7 @@ The overall accuracy with Saskia’s training data is 71%. The sensitivity (0.80
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
 autoplot(confus_sas_tra_cama, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  scale_fill_gradient(low="#FCF3CF",high = "#F1C40F")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
@@ -1474,7 +1474,7 @@ With Saskia’s test data the overall accuracy is 82%. The sensitivity (0.83) is
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
 autoplot(confus_sas_tes_cama, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  scale_fill_gradient(low="#FCF3CF",high = "#F1C40F")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
@@ -1486,18 +1486,19 @@ The overall accuracy with Sarah’s activity data is 59%. With a sensitivity of 
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
 autoplot(confus_sar_tes_cama, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  scale_fill_gradient(low="#FCF3CF",high = "#F1C40F")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
 ```
 
-
 ### CART based classification
 
 #### Training data Saskia
 
-```{r CART tree based on Saskis's training data, message=FALSE, results='hide', fig.cap="Classification decision tree."}
+The classification decision tree uses stepMean from the attribute based classification as well as the attributes recreation and pub_trans from the CAMA based classification. 
+
+```{r CART tree based on Saskis's training data, message=FALSE, results='hide', fig.cap="Classification decision tree. For the diversions "recreation and "pub_trans" the number 1 corresponds to TRUE and the number 0 to FALSE. Therefore the left branch of the diversion recreation corresponds to sites, which had the attribute "recreation" in the CAMA analysis set to TRUE. The three numbers at each leaf correspond to the number of points of each of the attributed walking activity categories (recreation, shopping, travel).}
 # plot classification tree
 plot(model_sas_train)
 text(model_sas_train, cex=0.8,use.n = TRUE, xpd = TRUE)
@@ -1509,7 +1510,7 @@ With Saskia’s training data the overall accuracy is 77%. The most sensitive ca
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
 autoplot(confus_cart_train, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  scale_fill_gradient(low="#FADBD8",high = "#E74C3C")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
@@ -1521,7 +1522,7 @@ The overall accuracy is 55% for Saskia’s test data. Recreation has the highest
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
 autoplot(confus_cart_test_sas, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  scale_fill_gradient(low="#FADBD8",high = "#E74C3C")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
@@ -1533,7 +1534,7 @@ For Sarah’s test data the overall accuracy is 47%. Sensitivity (0.85) and dete
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
 autoplot(confus_cart_sar_test, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  scale_fill_gradient(low="#FADBD8",high = "#E74C3C")+
   theme(legend.position = "right")+
   labs(fill="frequency")
 
