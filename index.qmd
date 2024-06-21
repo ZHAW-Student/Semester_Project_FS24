@@ -274,7 +274,6 @@ st_write(oev_selection, dsn="CAMA_data/oev_selection.gpkg")
 
 ```
 
-
 ```{r attribute-based classification, results='hide', fig.keep='none'}
 #| code-summary: Attribute based classification
 
@@ -962,11 +961,6 @@ sas_tra_classification <-na.omit(sas_tra_classification)
 confus_sas_tra_cama <-conf_mat(data = sas_tra_classification, truth = Attribute_factor, 
                   estimate = activity_factor)
 
-autoplot(confus_sas_tra_cama, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
-  theme(legend.position = "right")+
-  labs(fill="frequency")
-
 ###Compute model accuracy ----
 confusionMatrix(sas_tra_classification$Attribute_factor, sas_tra_classification$activity_factor)
 
@@ -1049,11 +1043,6 @@ sas_test_classification <-sas_test_classification |>
 sas_test_classification<-na.omit(sas_test_classification)
 confus_sas_tes_cama <-conf_mat(data = sas_test_classification, truth = Attribute_factor, estimate = activity_factor)
 
-autoplot(confus_sas_tes_cama, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
-  theme(legend.position = "right")+
-  labs(fill="frequency")
-
 ###Compute model accuracy ----
 confusionMatrix(sas_test_classification$Attribute_factor, sas_test_classification$activity_factor)
 
@@ -1131,11 +1120,6 @@ sar_test_classification <-sar_test_classification |>
 sar_test_classification<-na.omit(sar_test_classification)
 confus_sar_tes_cama <-conf_mat(data = sar_test_classification, truth = Attribute_factor, estimate = activity_factor)
 
-autoplot(confus_sar_tes_cama, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
-  theme(legend.position = "right")+
-  labs(fill="frequency")
-
 ###Compute model accuracy ----
 confusionMatrix(sar_test_classification$Attribute_factor, sar_test_classification$activity_factor)
 ```
@@ -1166,21 +1150,12 @@ activities_sas_train$Attribute_factor.x <-as.factor(activities_sas_train$Attribu
 set.seed(6832)
 model_sas_train <-rpart(Attribute_factor.x~ speedMean+stepMean+acceleration+ recreation + oev + gebaeude, data=activities_sas_train, method= "class")
 
-### Visualize tree ----
-plot(model_sas_train)
-text(model_sas_train, cex=0.8,use.n = TRUE, xpd = TRUE)
-
 ###Make prediction on original data for confusion matrix----
 pred_model_sas_train<- predict(model_sas_train, type="class")
 activities_sas_train$pred<-pred_model_sas_train
 
 ### Confusion matrix for training- data ---
 confus_cart_train <-conf_mat(data =activities_sas_train, truth = Attribute_factor.x,estimate = pred)
-
-autoplot(confus_cart_train, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
-  theme(legend.position = "right")+
-  labs(fill="frequency")
 
 ### Compute model accuracy rate on Sakia's training data----
 confusionMatrix(activities_sas_train$Attribute_factor.x, activities_sas_train$pred)
@@ -1213,11 +1188,6 @@ activities_sas_test$pred <-pred_model_sas_test
 confus_cart_test_sas <-conf_mat(data = activities_sas_test,
                            truth = Attribute_factor.x, estimate = pred)
 
-autoplot(confus_cart_test_sas, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
-  theme(legend.position = "right")+
-  labs(fill="frequency")
-
 ### Compute model accuracy rate on Sakia's test data----
 confusionMatrix(activities_sas_test$Attribute_factor.x, activities_sas_test$pred)
 
@@ -1249,11 +1219,6 @@ activities_sar_test$pred <-pred_model_sar_test
 ### Confusion matrix for Sarah's test- data  ---
 confus_cart_sar_test <-conf_mat(data = activities_sar_test, 
                            truth = Attribute_factor.x, estimate = pred)
-
-autoplot(confus_cart_sar_test, type="heatmap")+
-  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
-  theme(legend.position = "right")+
-  labs(fill="frequency")
 
 ### Compute model accuracy rate on Sarah's test data----
 confusionMatrix(activities_sar_test$Attribute_factor.x, activities_sar_test$pred)
@@ -1418,16 +1383,16 @@ The three approaches used in this study are classification based on attributes o
 
 ### Data
 
-Data was collected with the Strava App from March to June 2024. The training data for the development of the algorithms consists of 12 trajectories recorded by Saskia in March and April 2024. There are 13'636 attributed points. Additional data is collected by Saskia and Sarah in June 2024 to enable testing of the developed algorithms. Additional three trajectories recorded from Saskia in 2023 are used to test the algorithms. The algorithms are tested separately on the data of both of us. This allows us to draw a conclusion whether the algorithms are able to differentiate walking patterns from different people. The test data from Saskia consist of 6 trajectories and a total of 8'559 attributed points. The test data from Sarah consists of 12 trajectories and a total of 17'648 attributed points. 
+Data was collected with the Strava App from March to June 2024. The training data for the development of the algorithms consists of 12 trajectories recorded by Saskia in March and April 2024. There are 13'636 attributed points. Additional data was collected by Saskia and Sarah in June 2024 to enable testing of the developed algorithms. Additional three trajectories recorded from Saskia in 2023 are used to test the algorithms. The algorithms are tested separately on the data of both. This allows drawing a conclusion whether the algorithms are able to differentiate walking patterns from different people. Saskia's test data consists of 6 trajectories and a total of 8'559 attributed points. Sarah's test data consists of 12 trajectories and a total of 17'648 attributed points. 
 
 ### Preparation
 
-The data exported from Strava has the format gpx. The single activities are read and written into a data frame. IDs and descriptions for recognition are assigned to the single activities. The activities are then combined to one data frame and turned into a spatial object, which is then exported for manual classification. In QGIS, every point is given either the attribute shopping, recreation or commuting. The points are selected by location using an Open Street Map basemap. The activities are then again imported, turned into a spatial object and reprojected to LV95.
+The data exported from Strava has the format gpx. The single activities are read and written into a data frame. IDs and descriptions for recognition are assigned to the single activities. The activities are then combined to one data frame and turned into a spatial object, which is then exported for manual classification. In QGIS, every point is given either the attribute shopping, recreation or travel. The points are selected by location using an Open Street Map basemap. The activities are then again imported, turned into a spatial object and reprojected to LV95.
 
 
 ### Attribute-based classification
 
-For the attribute-based classification, the time-lag and distance between single locations are being calculated. These calculations are checked for outlines. As the time lag between two consecutive locations is mostly 1 s, all intervals bigger than 5 s are removed, as these are most likely a mistake. The same is true for the distance between two consecutive locations. All step length more than 5 m are removed. As attributes also depend on the spatial scale, the mean step is calculated using the two previous and two next distances. The speed is deducted from this mean step. The segmentation is done as described in @laube_how_2011. The threshold for moving is set to 1.5 m. This is based on the assumption that this equals around 3 - 4 steps, which can be interpreted as moving. Additionally, acceleration was calculated based on the calculated speed and time lag. After the calculation of the attributes per trajectories, a summary is done for each trajectory to find differences between activity types. Also, a summary over all activities is done to find differences between activity types. This information was used to set the thresholds. Based on the established differences, a classification is done. The classification is verified using a confusion matrix and its statistic output. The thresholds for classification are adapted until the best possible classification is reached. The following figure shows the workflow for the attribute-based classification. \
+For the attribute-based classification, the time-lag and distance between single locations are being calculated. These calculations are checked for outliers. As the time lag between two consecutive locations is mostly 1 s, all intervals bigger than 5 s are removed. All step lengths of more than 5 m are removed. As attributes also depend on the spatial scale, the mean step is calculated using the two previous and two next points. The speed is deducted from this mean step. The segmentation is done as described in @laube_how_2011. The threshold for movement is set to 1.5 m. This is based on the assumption that this equals around 3 - 4 steps, which can be interpreted as movement. Additionally, acceleration was calculated based on speed and time lag. After the calculation of the attributes per trajectories, a summary is done for each trajectory to find differences between activity types. Also, a summary over all activities is done to find differences between activity types. This information was used to set the thresholds. Based on the established differences, a classification is done. The classification is verified using a confusion matrix and its statistic output. The thresholds for classification are adapted until the best possible classification is reached. The following figure shows the workflow for the attribute-based classification. \
 ![workflow](abw.png)
 
 ### CAMA classification
@@ -1449,11 +1414,11 @@ text
 
 ### Attribute based classification
 
-#### Training data
+#### Training data Saskia
 
-Despite extensive testing and adapting of the thresholds, it was not possible to correctly classify all activities. Based on the attributes speed, step length and acceleration, activities were hard to distinguish. 49 out of 12'886 points could not be classified and were removed before computing the confusion matrix. 7'526 points were classified correctly, which leads to an overall accuracy of 59 %. Sensitivity is highest for the class travel (0.61), specificity is highest for the class shopping (0.98). Detection rate is highest for travel (0.54). Travel and recreation were most difficult to differentiate. 
+Despite extensive testing and adapting of the thresholds, it was not possible to correctly classify all activities. 49 out of 12'886 points could not be classified and were removed before computing the confusion matrix. 7'526 points were classified correctly, which leads to an overall accuracy of 59 %. Sensitivity is highest for the class travel (0.61). Detection rate is highest for travel (0.54).
 
-```{r confusion matrix, message=FALSE, results='hide', fig.cap="Confusion matrix for the training data. The overall accuracy is 59 %. Despite adapting thresholds, travel and recreation could not be clearly differentiated."}
+```{r confusion matrix, message=FALSE, results='hide', fig.cap="Confusion matrix for the training data. The overall accuracy is 59 %."}
 #| code-summary: confusion matrix training data
 # plot confusion matrix for test data
 autoplot(confus_training, type="heatmap")+
@@ -1464,9 +1429,9 @@ autoplot(confus_training, type="heatmap")+
 
 #### Activity data Saskia
 
-30 out of 6826 points could not be classified and were removed before computing the confusion matrix. 2270 points were classified correctly, leading to an overall accuracy of the model for the activity data of Saskia of 33 %. Again, sensitivity is highest for travel (0.34), as well as the detection rate (0.33).
+30 out of 6826 points could not be classified and were removed before computing the confusion matrix. 2270 points were classified correctly, leading to an overall accuracy of the model for Saskia's activity data of 33 %. Again, sensitivity is highest for travel (0.34), as well as the detection rate (0.33).
 
-```{r confusion matrix Saskias data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskias data. The accuracy is 33 %. Most misclassifications occur with travel and recreation."}
+```{r confusion matrix Saskias data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskia's data. The accuracy is 33 %. Most misclassifications occur with travel and recreation."}
 #| code-summary: Confusion matrix for Saskias data
 # plot confusion matrix
 autoplot(confus_saskia, type="heatmap")+
@@ -1477,9 +1442,9 @@ autoplot(confus_saskia, type="heatmap")+
 
 #### Activity data Sarah
 
-51 out of 17'061 points could not be classified and were removed before computing the confusion matrix. For Sarahs activities, 3209 points were classified correctly. The accuracy of the model is 19 %. The sensitivity for recreation is highest (0.71), the detection rate is highest for travel (0.16).
+51 out of 17'061 points could not be classified and were removed before computing the confusion matrix. For Sarah's activities, 3209 points are classified correctly. The accuracy of the model is 19 %. The sensitivity for recreation is highest (0.71), the detection rate is highest for travel (0.16).  95 % of the points are classified as travel.
 
-```{r confusion matrix Sarahs data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarahs data. The accuracy is 19 %. 95 % of the points are classified as travel."}
+```{r confusion matrix Sarah's data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarah's data."}
 #| code-summary: Confusion matrix Sarahs data
 # plot confusion matrix
 autoplot(confus_sarah, type="heatmap")+
@@ -1489,6 +1454,90 @@ autoplot(confus_sarah, type="heatmap")+
 
 ```
 
+### CAMA based classification
+
+#### Training data Saskia
+The overall accuracy with Saskia’s training data is 71%. The sensitivity (0.80) and detection rate (0.46) are highest for travel.
+```{r CAMA confusion matrix Saskia's training data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskia's training data."}
+#| code-summary: Confusion matrix Saskias training data
+# plot confusion matrix
+autoplot(confus_sas_tra_cama, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
+
+```
+
+#### Activity data Saskia
+With Saskia’s test data the overall accuracy is 82%. The sensitivity (0.83) is highest for recreation and the detection rate (0.59) is highest for recreation as well.
+```{r CAMA confusion matrix Saskia's test data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskia's test data."}
+#| code-summary: Confusion matrix Saskias training data
+# plot confusion matrix
+autoplot(confus_sas_tes_cama, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
+
+```
+
+#### Activity data Sarah
+The overall accuracy with Sarah’s activity data is 59%. With a sensitivity of 0.86 shopping is the most sensitive category. On the other hand the detection rate is highest for recreation (0.27).
+```{r CAMA confusion matrix Sarah's test data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarah's test data."}
+#| code-summary: Confusion matrix Saskias training data
+# plot confusion matrix
+autoplot(confus_sar_tes_cama, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
+
+```
+
+
+### CART based classification
+
+#### Training data Saskia
+
+```{r CART tree based on Saskis's training data, message=FALSE, results='hide', fig.cap="Classification decision tree."}
+# plot classification tree
+plot(model_sas_train)
+text(model_sas_train, cex=0.8,use.n = TRUE, xpd = TRUE)
+```
+
+
+With Saskia’s training data the overall accuracy is 77%. The most sensitive category is travel (0.79) and the highest detection rate is present for travel with (0.52).
+```{r CART confusion matrix Saskia's training data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskia's training data."}
+#| code-summary: Confusion matrix Saskias training data
+# plot confusion matrix
+autoplot(confus_cart_train, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
+
+```
+
+#### Activity data Saskia
+The overall accuracy is 55% for Saskia’s test data. Recreation has the highest sensitivity (0.81) and travel has the highest detection rate (0.31).
+```{r CART confusion matrix Saskia's test data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskia's test data."}
+#| code-summary: Confusion matrix Saskias training data
+# plot confusion matrix
+autoplot(confus_cart_test_sas, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
+
+```
+
+#### Activity data Sarah
+For Sarah’s test data the overall accuracy is 47%. Sensitivity (0.85) and detection rate (0.19) are highest for shopping.
+```{r CART confusion matrix Sarah's test data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarah's test data."}
+#| code-summary: Confusion matrix Saskias training data
+# plot confusion matrix
+autoplot(confus_cart_sar_test, type="heatmap")+
+  scale_fill_gradient(low="#D6EAF8",high = "#2E86C1")+
+  theme(legend.position = "right")+
+  labs(fill="frequency")
+
+```
 
 ## Discussion
 
