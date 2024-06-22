@@ -1,7 +1,8 @@
 ---
 title: Differentiation of walking patterns
-subtitle: An attempt to differntiate walking patterns based on attributes and context information \Project Work for the module Patterns and Trends FS24
+subtitle: An attempt to differentiate walking patterns based on attributes and context information \Project Work for the module Patterns and Trends FS24
 author: Saskia Gianola and Sarah Wirth
+output: bookdown::html_document2
 format:
   html:
     code-fold: true
@@ -1363,17 +1364,20 @@ confusionMatrix(activities_sar_test$Attribute_factor.x, activities_sar_test$pred
 
 ## Abstract
 
-The main question this paper attempts to answer is whether it is possible to differentiate between the walking pattern from recreation, travel and shopping. Data is collected with the Strava App. Three classification approaches are developed, tested and evaluated. The first is based on the attributes speed, step length and acceleration. The second a is context aware movement analysis (CAMA). The third is a classification and regression tree (CART) algorithm that combines the attributes generated in the first and second approach. We can conclude that the attribute-based classification is not able to cleanly separate travel and recreation. For shopping, there was no clear pattern to be found, as the GPS signal is most often lost in the building. The CAMA approach performed best in classifying the activities. 
+The main question this paper attempts to answer is whether it is possible to differentiate between the walking pattern from recreation, travel and shopping. Data is collected with the Strava App. Three classification approaches are developed, tested and evaluated. The first is based on the attributes speed, step length and acceleration. The second a is context aware movement analysis (CAMA). The third is a classification and regression tree (CART) algorithm that combines the attributes generated in the first and second approach. We can conclude that the attribute-based classification is not able to cleanly separate travel and recreation. For shopping, there was no clear pattern to be found, as the GPS signal is most often lost in the building. The CAMA approach performed best in classifying the activities from the same person. For multiple people, CART was able do differentiate best as the activities are classified using all data, not only the training data recorded by one person.
 
 ## Introduction
 
 The aim of this paper is to test and compare different approaches to detect walking patterns. The different patterns that should be able to be distinguished are walking for recreational purposes, walking for commuting and shopping. The underlying idea is that the pattern of these walking types differs in their attributes and the environment that there are based in. It was already shown that a differentiation between transit and walking based on speed is possible [@kim_new_2012]. Also, outdoor walking activities are generally longer, more continuous and faster with the walking duration being the most important attribute for classification [@baroudi_classification_2024].\
-Based on walking data tracked with the Strava App, we want to answer the following research questions:\
-* How well it possible to derive the type of activity from movement data considering the attributes step length, speed, acceleration and visited locations?
-* Which type of analytical approach performs best in differentiating between the different activities?
-* How does the performance of the analytical concepts differ when applied on trajectories recorded by different people?
+Based on walking data tracked with the Strava App, we want to answer the following research questions: \
+* How well it possible to derive the type of activity from movement data considering the attributes step length, speed, acceleration and visited locations? \
+* Which type of analytical approach performs best in differentiating between the different activities? \
+* How does the performance of the analytical concepts differ when applied on trajectories recorded by different people? \
 The three approaches used in this study are classification based on attributes of the trajectory, CAMA-analysis and classification based on CART tree. The approaches are described in detail in the chapter material and methods. The following figure show the workflow for the three classification methods. \
-![workflow](overall.png)
+
+```{r overall workflow, out.width= "100%", fig.cap="Overall workflow for the classification methods." }
+knitr::include_graphics(here::here("overall.png"))
+```
 
 ## Material and Methods
 
@@ -1389,21 +1393,31 @@ The data exported from Strava has the format gpx. The single activities are read
 ### Attribute-based classification
 
 For the attribute-based classification, the time-lag and distance between  locations are being calculated. These calculations are checked for outliers. As the time-lag between two consecutive locations is mostly 1 s, all intervals bigger than 5 s are removed. All step lengths of more than 5 m are removed. As attributes also depend on the spatial scale, the mean step is calculated using the two previous and two next points. The speed is deducted from this mean step. The segmentation is done as described in @laube_how_2011. The threshold for movement is set to 1.5 m. This is based on the assumption that this equals around 3 - 4 steps, which can be interpreted as movement. Additionally, acceleration was calculated. After the calculation of the attributes, a summary over all activities is done to find differences between activity types. This information was used to set the thresholds. Based on the established differences, a classification is done. The classification is verified using a confusion matrix and its statistic output. The thresholds for classification are adapted until the best possible classification is reached. The following figure shows the workflow for the attribute-based classification. \
-![workflow](abw.png)
+
+```{r atribute-based workflow, out.width= "100%", fig.cap="Workflow for the attribute-based classification. Indicated thresholds are used to classify activities." }
+knitr::include_graphics(here::here("abw.png"))
+```
+
 
 ### CAMA classification
 
-This approach is based on the idea that the context of a walking activity allows a differentiation of its purpose. The context aware movement analysis (CAMA) based classification is derived from the context. The layers tlm_bb_bodenbedeckung, tlm_areale_nutzungsareal, tlm_strassen_strasse tlm_oev_haltestelle and tlm_bauten_gebaeude_footprint of the swissTLM3D [@bundesamt_fur_landestopografie_swisstlm3d_2022] are used. For the first three layers a buffer of 10 m, for the fourth a buffer of 50 m and for the last layer no buffer is calculated. The layer tlm_strassen_strasse was reduced to streets of several categories (Ausfahrt, Einfahrt, Zufahrt, 3 m Strasse, 1 m Weg, 2 m Weg, 1 m Wegfragment and 2 m Wegfragment). For each layer a spatial join to the trajectories is performed. Then all single locations are classified using the following set of rules.\
+The context aware movement analysis (CAMA) based classification is derived from the context. The layers tlm_bb_bodenbedeckung, tlm_areale_nutzungsareal, tlm_strassen_strasse tlm_oev_haltestelle and tlm_bauten_gebaeude_footprint of the swissTLM3D [@bundesamt_fur_landestopografie_swisstlm3d_2022] are used. For the first three layers a buffer of 10 m, for the fourth a buffer of 50 m and for the last layer no buffer is calculated. The layer tlm_strassen_strasse was reduced to streets of several categories (Ausfahrt, Einfahrt, Zufahrt, 3 m Strasse, 1 m Weg, 2 m Weg, 1 m Wegfragment and 2 m Wegfragment). For each layer a spatial join to the trajectories is performed. Then all single locations are classified using the following set of rules.\
 
-![workflow](cama.png)
+```{r cama workflow, out.width= "100%", fig.cap="Workflow for the CAMA classification. Information about the context is added to the activity data." }
+knitr::include_graphics(here::here("cama.png"))
+```
 
 ### Validation
 
-Validation of the classification is based on methods described by [@rykiel_testing_1996]. Methods used are visualization, comparison between the different approaches, internal validation and sensitivity analysis. The following process is applied to all previously described classification approaches. For every classification approach and dataset a confusion matrix is created and the associated statistics are calculated.\
-![workflow](validation.png)
+Validation of the classification is based on methods described by [@rykiel_testing_1996]. Methods used are visualization, comparison between the different approaches, internal validation and sensitivity analysis. The following process is applied to all previously described classification approaches. For every classification approach and dataset, a confusion matrix is created and the associated statistics are calculated.\
+
+
+```{r validation workflow, out.width= "100%", fig.cap="Workflow for the validation process. This workflow is applied on all three datasets." }
+knitr::include_graphics(here::here("validation.png"))
+```
 
 ### CART classification
-Using a classification and regression tree (CART) algorithm in rpart [@therneau_rpart_2023] a decision tree is built. Default parameters for the training data with the attributes from the attribute based classification and the location attributes from the CAMA classification are used. The decision-tree is then applied to Saskia’s test-data and Sarah’s test-data independently. 
+Using a classification and regression tree (CART) algorithm in rpart [@therneau_rpart_2023] a decision tree is built. Default parameters for the training data with the attributes from the attribute-based classification and the location attributes from the CAMA classification are used. The decision-tree is then applied to Saskia’s test-data and Sarah’s test-data independently. 
 
 
 ## Results
@@ -1414,7 +1428,7 @@ Using a classification and regression tree (CART) algorithm in rpart [@therneau_
 
 Despite extensive testing and adapting of the thresholds, it was not possible to correctly classify all activities. 49 out of 12'886 points could not be classified and were removed before computing the confusion matrix. 7'526 points were classified correctly, which leads to an overall accuracy of 59 %. Sensitivity is highest for the class travel (0.61). Detection rate is highest for travel (0.54).
 
-```{r confusion matrix, message=FALSE, results='hide', fig.cap="Confusion matrix for the training data."}
+```{r confusion matrix, message=FALSE, results='hide', fig.cap="Confusion matrix of the attribute-based classification for the training data."}
 #| code-summary: confusion matrix training data
 # plot confusion matrix for test data
 autoplot(confus_training, type="heatmap")+
@@ -1427,7 +1441,7 @@ autoplot(confus_training, type="heatmap")+
 
 30 out of 6826 points could not be classified and were removed before computing the confusion matrix. 2270 points were classified correctly, leading to an overall accuracy of the model for Saskia's activity data of 33 %. Again, sensitivity is highest for travel (0.34), as well as the detection rate (0.33).
 
-```{r confusion matrix Saskias data, message=FALSE, results='hide', fig.cap="Confusion matrix for the test data. "}
+```{r confusion matrix Saskias data, message=FALSE, results='hide', fig.cap="Confusion matrix of the attribute-based classification for the test data. "}
 #| code-summary: Confusion matrix for Saskias data
 # plot confusion matrix
 autoplot(confus_saskia, type="heatmap")+
@@ -1440,7 +1454,7 @@ autoplot(confus_saskia, type="heatmap")+
 
 51 out of 17'061 points could not be classified and were removed before computing the confusion matrix. For Sarah's activities, 3209 points are classified correctly. The accuracy of the model is 19 %. The sensitivity for recreation is highest (0.71), the detection rate is highest for travel (0.16).  95 % of the points are classified as travel.
 
-```{r confusion matrix Sarahs data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarah's test data."}
+```{r confusion matrix Sarahs data, message=FALSE, results='hide', fig.cap="Confusion matrix of the attribute-based classification for Sarah's test data."}
 #| code-summary: Confusion matrix Sarahs data
 # plot confusion matrix
 autoplot(confus_sarah, type="heatmap")+
@@ -1454,7 +1468,7 @@ autoplot(confus_sarah, type="heatmap")+
 
 #### Training data Saskia
 The overall accuracy for Saskia’s training data is 71%. The sensitivity (0.80) and detection rate (0.46) are highest for travel.
-```{r CAMA confusion matrix Saskias training data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskia's training data."}
+```{r CAMA confusion matrix Saskias training data, message=FALSE, results='hide', fig.cap="Confusion matrix of the CAMA-based classification for Saskia's training data."}
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
 autoplot(confus_sas_tra_cama, type="heatmap")+
@@ -1466,7 +1480,7 @@ autoplot(confus_sas_tra_cama, type="heatmap")+
 
 #### Activity data Saskia
 For Saskia’s test data the overall accuracy is 82%. The sensitivity (0.83)  and the detection rate (0.59) are highest for recreation.
-```{r CAMA confusion matrix Saskias test data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskia's test data."}
+```{r CAMA confusion matrix Saskias test data, message=FALSE, results='hide', fig.cap="Confusion matrix of the CAMA-based classification for Saskia's test data."}
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
 autoplot(confus_sas_tes_cama, type="heatmap")+
@@ -1477,8 +1491,8 @@ autoplot(confus_sas_tes_cama, type="heatmap")+
 ```
 
 #### Activity data Sarah
-The overall accuracy for Sarah’s activity data is 59%. With a sensitivity of 0.86 shopping is the most sensitive category. On the other hand the detection rate is highest for recreation (0.27).
-```{r CAMA confusion matrix Sarahs test data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarah's test data."}
+The overall accuracy for Sarah’s activity data is 59%. With a sensitivity of 0.86 shopping is the most sensitive category. On the other hand, the detection rate is highest for recreation (0.27).
+```{r CAMA confusion matrix Sarahs test data, message=FALSE, results='hide', fig.cap="Confusion matrix of the CAMA-based classification for Sarah's test data."}
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
 autoplot(confus_sar_tes_cama, type="heatmap")+
@@ -1494,7 +1508,7 @@ autoplot(confus_sar_tes_cama, type="heatmap")+
 
 The classification decision tree uses stepMean from the attribute based classification as well as the attributes recreation and pub_trans from the CAMA based classification. 
 
-```{r CART tree based on Saskias training data, message=FALSE, results='hide', fig.cap="Classification decision tree. For the diversions recreation and pub_trans the number 1 corresponds to TRUE and the number 0 to FALSE. Therefore the left branch of the diversion recreation corresponds to sites, which had the attribute recreation in the CAMA analysis set to TRUE. The three numbers at each leaf correspond to the number of points of each of the attributed walking activity categories (recreation, shopping, travel)."}
+```{r CART tree based on Saskias training data, message=FALSE, results='hide', fig.cap="Classification decision tree. For the diversions recreation and pub_trans the number 1 corresponds to TRUE and the number 0 to FALSE. Therefore, the left branch of the diversion recreation corresponds to sites, which had the attribute recreation in the CAMA analysis set to TRUE. The three numbers at each leaf correspond to the number of points of each of the attributed walking activity categories (recreation, shopping, travel)."}
 # plot classification tree
 plot(model_sas_train)
 text(model_sas_train, cex=0.8,use.n = TRUE, xpd = TRUE)
@@ -1502,7 +1516,7 @@ text(model_sas_train, cex=0.8,use.n = TRUE, xpd = TRUE)
 
 
 For Saskia’s training data the overall accuracy is 77%. The most sensitive category is travel (0.79) and the highest detection rate is for travel (0.52).
-```{r CART confusion matrix Saskias training data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskia's training data."}
+```{r CART confusion matrix Saskias training data, message=FALSE, results='hide', fig.cap="Confusion matrix of the CART-based classification for Saskia's training data."}
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
 autoplot(confus_cart_train, type="heatmap")+
@@ -1514,7 +1528,7 @@ autoplot(confus_cart_train, type="heatmap")+
 
 #### Activity data Saskia
 The overall accuracy is 55% for Saskia’s test data. Recreation has the highest sensitivity (0.81) and travel has the highest detection rate (0.31).
-```{r CART confusion matrix Saskias test data, message=FALSE, results='hide', fig.cap="Confusion matrix for Saskia's test data."}
+```{r CART confusion matrix Saskias test data, message=FALSE, results='hide', fig.cap="Confusion matrix of the CART-based classification for Saskia's test data."}
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
 autoplot(confus_cart_test_sas, type="heatmap")+
@@ -1526,7 +1540,7 @@ autoplot(confus_cart_test_sas, type="heatmap")+
 
 #### Activity data Sarah
 For Sarah’s test data the overall accuracy is 47%. Sensitivity (0.85) and detection rate (0.19) are highest for shopping.
-```{r CART confusion matrix Sarahs test data, message=FALSE, results='hide', fig.cap="Confusion matrix for Sarah's test data."}
+```{r CART confusion matrix Sarahs test data, message=FALSE, results='hide', fig.cap="Confusion matrix of the CART-based classification for Sarah's test data."}
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
 autoplot(confus_cart_sar_test, type="heatmap")+
@@ -1549,17 +1563,15 @@ The CAMA based classification performed well on Saskia’s training dataset as w
 In the CART based classification a diminishing accuracy from Saskia’s training data to Saskia’s testing data and Sarah’s testing data is present. This shows the importance of using a dataset of a sufficient size to build a model. Further the importance of using data from different people to build a model and catch individual characteristics and patterns is highlighted. 
 
 ### Overall discussion
-It can be concluded, that a classification based only on the attributes step length, speed and acceleration does not perform well. Additionally, context information like visited locations is needed. The CAMA approach outperformed the attribute-based as well as the CART approach for Saskia's data. The CART approach performed best on Sarah's data, which highlights the importance of training algorithms with data collected by different people. \
-As described in a review by @pearson_systematic_2024 overall a lack in consensus for the optimal reporting of GPS data is present, with studies often missing to report noise. In our group project the exported data did not contain any information on GPS accuracy, which shows how unimportant this information is perceived. This information could have been used to improve our analysis by not only providing information about the reliability of the data but also to identify locations within a building. As @kim_new_2012 showed, the number of satellites can be used to asses whether a point was documented within a building. Another option to improve the differentiation between indoor and outdoor activities could be the use of the walking period duration and continuity as in @baroudi_classification_2024 or record density and heading changes as described in @berjisian_evaluation_2022. 
-
-To conclude our analysis demonstrated the importance of context information in activity type detection. 
+It can be concluded that a classification based only on the attributes step length, speed and acceleration does not perform well. Additionally, context information like visited locations is needed. The CAMA approach outperformed the attribute-based as well as the CART approach for Saskia's data. The CART approach performed best on Sarah's data, which highlights the importance of training algorithms with data collected by different people. The lack of accuracy of points recorded indoors is the main reason for misclassification of shopping activities. The exported data did not contain any information on GPS accuracy. As described in a review by @pearson_systematic_2024, there is a lack in consensus for the optimal reporting of GPS data with studies often missing to report noise. This information could have been used to improve our analysis by not only providing information about the reliability of the data but also to identify locations within a building. As @kim_new_2012 showed, the number of satellites can be used to assess whether a point was documented within a building. Another option to improve the differentiation between indoor and outdoor activities could be the use of the walking period duration and continuity as in @baroudi_classification_2024 or record density and heading changes as described in @berjisian_evaluation_2022. This study shows that classification of activity data is possible but its quality relies on context information as well as a wide range of data collected by different people. 
 
 
 ## Appendix
 ### Statement of Authorship for Student Work at the School of Life Sciences and Facility Management
 By submitting the enclosed Project the student affirms independent completion of the(ir) work without outside help.
 The undersigned student declares that all printed and electronic sources used in the text and the bibliography are correctly indicated, i.e., that the work does not contain any plagiarism (no parts that have been taken in whole or in part from another's or his/her own text or from another's or his/her own work without clear identification and without stating the source). In the event of misconduct of any kind, Paragraph 39 and Paragraph 40 of the General Academic Regulations for Bachelor's and Master's degree programmes at the Zurich University of Applied Sciences (dated 29 January 2008) and the provisions of the Disciplinary Measures of the University Regulations shall apply.\
-Saskia Gianola and Sarah Wirth
+
+![signatures](signature.png)
 
 
 ### Wordcount
