@@ -1373,9 +1373,9 @@ The CAMA approach performed best overall in classifying the activities.
 
 The aim of this paper is to compare different approaches to detect walking patterns. The different patterns that should be able to be distinguished are walking for recreational purposes, walking for commuting, and shopping. The underlying idea is that these walking types differs in their attributes and the environment that there are based in. It was already shown that a differentiation between transit and walking based on speed is possible [@kim_new_2012]. Also, outdoor walking activities are generally longer, more continuous and faster with the walking duration being the most important attribute for classification [@baroudi_classification_2024].\
 Based on walking data tracked with the Strava App, we want to answer the following research questions: \
-* How well it possible to derive the type of activity from movement data considering the attributes step length, speed, acceleration and visited locations? \
-* Which type of analytical approach performs best in differentiating between the different activities? \
-* How does the performance of the analytical concepts differ when applied on trajectories recorded by different people? \
+- How well it possible to derive the type of activity from movement data considering the attributes step length, speed, acceleration and visited locations? \
+- Which type of analytical approach performs best in differentiating between the different activities? \
+- How does the performance of the analytical concepts differ when applied on trajectories recorded by different people? \
 
 
 ## Material and Methods
@@ -1470,7 +1470,7 @@ autoplot(confus_sarah, type="heatmap")+
 ### CAMA based classification
 
 #### Training data Saskia
-The overall accuracy for Saskia’s training data is 71%. The sensitivity (80 %) and detection rate (46 %) are highest for travel.
+The overall accuracy for Saskia’s training data is 71 %. The sensitivity (80 %) and detection rate (46 %) are highest for travel.
 ```{r CAMA confusion matrix Saskias training data, message=FALSE, results='hide', fig.cap="Confusion matrix of the CAMA-based classification for Saskia's training data."}
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
@@ -1482,7 +1482,7 @@ autoplot(confus_sas_tra_cama, type="heatmap")+
 ```
 
 #### Activity data Saskia
-For Saskia’s test data the overall accuracy is 82%. The sensitivity (83 %)  and the detection rate (59 %) are highest for recreation.
+For Saskia’s test data the overall accuracy is 82 %. The sensitivity (83 %)  and the detection rate (59 %) are highest for recreation.
 ```{r CAMA confusion matrix Saskias test data, message=FALSE, results='hide', fig.cap="Confusion matrix of the CAMA-based classification for Saskia's test data."}
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
@@ -1494,7 +1494,7 @@ autoplot(confus_sas_tes_cama, type="heatmap")+
 ```
 
 #### Activity data Sarah
-The overall accuracy for Sarah’s activity data is 59%. With a sensitivity of 0.86 shopping is the most sensitive category. Detection rate is highest for recreation (27 %).
+The overall accuracy for Sarah’s activity data is 59 %. With a sensitivity of 0.86 shopping is the most sensitive category. Detection rate is highest for recreation (27 %).
 ```{r CAMA confusion matrix Sarahs test data, message=FALSE, results='hide', fig.cap="Confusion matrix of the CAMA-based classification for Sarah's test data."}
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
@@ -1518,7 +1518,7 @@ text(model_sas_train, cex=0.8,use.n = TRUE, xpd = TRUE)
 ```
 
 
-For Saskia’s training data the overall accuracy is 77%. The most sensitive category is travel (79 %) and the highest detection rate is for travel (52 %) as well.
+For Saskia’s training data the overall accuracy is 77 %. The most sensitive category is travel (79 %) and the highest detection rate is for travel (52 %) as well.
 ```{r CART confusion matrix Saskias training data, message=FALSE, results='hide', fig.cap="Confusion matrix of the CART-based classification for Saskia's training data."}
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
@@ -1530,7 +1530,7 @@ autoplot(confus_cart_train, type="heatmap")+
 ```
 
 #### Activity data Saskia
-The overall accuracy is 55% for Saskia’s test data. Recreation has the highest sensitivity (81 %) and travel has the highest detection rate (31 %).
+The overall accuracy is 55 % for Saskia’s test data. Recreation has the highest sensitivity (81 %) and travel has the highest detection rate (31 %).
 ```{r CART confusion matrix Saskias test data, message=FALSE, results='hide', fig.cap="Confusion matrix of the CART-based classification for Saskia's test data."}
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
@@ -1542,7 +1542,7 @@ autoplot(confus_cart_test_sas, type="heatmap")+
 ```
 
 #### Activity data Sarah
-For Sarah’s test data the overall accuracy is 47%. Sensitivity (85 %) and detection rate (19 %) are highest for shopping.
+For Sarah’s test data the overall accuracy is 47 %. Sensitivity (85 %) and detection rate (19 %) are highest for shopping.
 ```{r CART confusion matrix Sarahs test data, message=FALSE, results='hide', fig.cap="Confusion matrix of the CART-based classification for Sarah's test data."}
 #| code-summary: Confusion matrix Saskias training data
 # plot confusion matrix
@@ -1560,10 +1560,10 @@ The points from shopping activity are less accurate, as the signal is often lost
 It can be concluded that with this approach it is not possible to clearly differentiate between shopping, travelling and walking for recreation. More information is needed, especially to differentiate between travel and recreation. In addition, the walking attributes differ not only between people but also between individual trajectories, which makes it more difficult to differentiate. 
 
 ### CAMA based classification
-The CAMA based classification performed well on Saskia’s training dataset and Sarah’s testing dataset but even better on Saskia’s testing dataset. That a testing dataset outperforms a training dataset is in this case due to CAMA using a set of rules, which were not derived from the training data but our overall perception of the objects and land use an activity is associated with. The differences in performance between the datasets stem from the percentage of points belonging to the activity type shopping in each dataset, which again have lower accuracy. Also for this analysis no points have been removed in preprocessing. Therefore this analysis includes more points with low accuracy due to their coordinates being falsely located outside of a building. This increases the number of points, which cannot be correctly predicted as shopping. \
+The CAMA based classification performed well on Saskia’s training dataset and Sarah’s testing dataset but even better on Saskia’s testing dataset. That a testing dataset outperforms a training dataset is in this case due to CAMA using a set of rules, which were not derived from the training data but our overall perception of the objects and land use an activity is associated with. The differences in performance between the datasets stem from the percentage of points belonging to the activity type shopping in each dataset, which again have lower accuracy. Also for this analysis no points have been removed in preprocessing. Therefore this analysis includes more points with low accuracy due to their coordinates being falsely located outside of a building. This increases the number of points, which cannot be correctly predicted as shopping. These points are visible in the following image as symbols close to, or within buildings. It also shows how the CAMA analysis is incapable of detecting recreational activity in an urban environment. \
 
-```{r map classification vs true, fig.cap="Classification (colors) versus true attribute (shape) for one actvity."}
-#| code-summary: Map to show true attribute versus classification
+```{r map classification vs true, fig.cap="Visualisation of a visit of a garden in Wintherthur and a shopping trip. The color corresponds to the predicted activity whereas the shape corresponds to the actual activity."}
+#| code-summary: Map true attribute versus classification
 winti <- read_delim("Winti.csv")
 traj6 <- st_as_sf(winti, coords = c("lon", "lat"), crs = 4326, remove = FALSE)
 traj6 <- st_transform(traj6, crs = 2056)

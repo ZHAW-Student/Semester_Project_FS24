@@ -1482,9 +1482,9 @@ div.csl-indent {
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>The aim of this paper is to compare different approaches to detect walking patterns. The different patterns that should be able to be distinguished are walking for recreational purposes, walking for commuting, and shopping. The underlying idea is that these walking types differs in their attributes and the environment that there are based in. It was already shown that a differentiation between transit and walking based on speed is possible <span class="citation" data-cites="kim_new_2012">(<a href="#ref-kim_new_2012" role="doc-biblioref">Kim et al. 2012</a>)</span>. Also, outdoor walking activities are generally longer, more continuous and faster with the walking duration being the most important attribute for classification <span class="citation" data-cites="baroudi_classification_2024">(<a href="#ref-baroudi_classification_2024" role="doc-biblioref">Baroudi et al. 2024</a>)</span>.<br>
 Based on walking data tracked with the Strava App, we want to answer the following research questions:<br>
-* How well it possible to derive the type of activity from movement data considering the attributes step length, speed, acceleration and visited locations?<br>
-* Which type of analytical approach performs best in differentiating between the different activities?<br>
-* How does the performance of the analytical concepts differ when applied on trajectories recorded by different people?<br>
+- How well it possible to derive the type of activity from movement data considering the attributes step length, speed, acceleration and visited locations?<br>
+- Which type of analytical approach performs best in differentiating between the different activities?<br>
+- How does the performance of the analytical concepts differ when applied on trajectories recorded by different people?<br>
 </p>
 </section>
 <section id="material-and-methods" class="level2">
@@ -1650,7 +1650,7 @@ Based on walking data tracked with the Strava App, we want to answer the followi
 <h3 class="anchored" data-anchor-id="cama-based-classification">CAMA based classification</h3>
 <section id="training-data-saskia-1" class="level4">
 <h4 class="anchored" data-anchor-id="training-data-saskia-1">Training data Saskia</h4>
-<p>The overall accuracy for Saskia’s training data is 71%. The sensitivity (80 %) and detection rate (46 %) are highest for travel.</p>
+<p>The overall accuracy for Saskia’s training data is 71 %. The sensitivity (80 %) and detection rate (46 %) are highest for travel.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Confusion matrix Saskias training data</summary>
@@ -1672,7 +1672,7 @@ Based on walking data tracked with the Strava App, we want to answer the followi
 </section>
 <section id="activity-data-saskia-1" class="level4">
 <h4 class="anchored" data-anchor-id="activity-data-saskia-1">Activity data Saskia</h4>
-<p>For Saskia’s test data the overall accuracy is 82%. The sensitivity (83 %) and the detection rate (59 %) are highest for recreation.</p>
+<p>For Saskia’s test data the overall accuracy is 82 %. The sensitivity (83 %) and the detection rate (59 %) are highest for recreation.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Confusion matrix Saskias training data</summary>
@@ -1694,7 +1694,7 @@ Based on walking data tracked with the Strava App, we want to answer the followi
 </section>
 <section id="activity-data-sarah-1" class="level4">
 <h4 class="anchored" data-anchor-id="activity-data-sarah-1">Activity data Sarah</h4>
-<p>The overall accuracy for Sarah’s activity data is 59%. With a sensitivity of 0.86 shopping is the most sensitive category. Detection rate is highest for recreation (27 %).</p>
+<p>The overall accuracy for Sarah’s activity data is 59 %. With a sensitivity of 0.86 shopping is the most sensitive category. Detection rate is highest for recreation (27 %).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Confusion matrix Saskias training data</summary>
@@ -1736,7 +1736,7 @@ Based on walking data tracked with the Strava App, we want to answer the followi
 </div>
 </div>
 </div>
-<p>For Saskia’s training data the overall accuracy is 77%. The most sensitive category is travel (79 %) and the highest detection rate is for travel (52 %) as well.</p>
+<p>For Saskia’s training data the overall accuracy is 77 %. The most sensitive category is travel (79 %) and the highest detection rate is for travel (52 %) as well.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Confusion matrix Saskias training data</summary>
@@ -1758,7 +1758,7 @@ Based on walking data tracked with the Strava App, we want to answer the followi
 </section>
 <section id="activity-data-saskia-2" class="level4">
 <h4 class="anchored" data-anchor-id="activity-data-saskia-2">Activity data Saskia</h4>
-<p>The overall accuracy is 55% for Saskia’s test data. Recreation has the highest sensitivity (81 %) and travel has the highest detection rate (31 %).</p>
+<p>The overall accuracy is 55 % for Saskia’s test data. Recreation has the highest sensitivity (81 %) and travel has the highest detection rate (31 %).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Confusion matrix Saskias training data</summary>
@@ -1780,7 +1780,7 @@ Based on walking data tracked with the Strava App, we want to answer the followi
 </section>
 <section id="activity-data-sarah-2" class="level4">
 <h4 class="anchored" data-anchor-id="activity-data-sarah-2">Activity data Sarah</h4>
-<p>For Sarah’s test data the overall accuracy is 47%. Sensitivity (85 %) and detection rate (19 %) are highest for shopping.</p>
+<p>For Sarah’s test data the overall accuracy is 47 %. Sensitivity (85 %) and detection rate (19 %) are highest for shopping.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Confusion matrix Saskias training data</summary>
@@ -1810,11 +1810,11 @@ Based on walking data tracked with the Strava App, we want to answer the followi
 </section>
 <section id="cama-based-classification-1" class="level3">
 <h3 class="anchored" data-anchor-id="cama-based-classification-1">CAMA based classification</h3>
-<p>The CAMA based classification performed well on Saskia’s training dataset and Sarah’s testing dataset but even better on Saskia’s testing dataset. That a testing dataset outperforms a training dataset is in this case due to CAMA using a set of rules, which were not derived from the training data but our overall perception of the objects and land use an activity is associated with. The differences in performance between the datasets stem from the percentage of points belonging to the activity type shopping in each dataset, which again have lower accuracy. Also for this analysis no points have been removed in preprocessing. Therefore this analysis includes more points with low accuracy due to their coordinates being falsely located outside of a building. This increases the number of points, which cannot be correctly predicted as shopping.<br>
+<p>The CAMA based classification performed well on Saskia’s training dataset and Sarah’s testing dataset but even better on Saskia’s testing dataset. That a testing dataset outperforms a training dataset is in this case due to CAMA using a set of rules, which were not derived from the training data but our overall perception of the objects and land use an activity is associated with. The differences in performance between the datasets stem from the percentage of points belonging to the activity type shopping in each dataset, which again have lower accuracy. Also for this analysis no points have been removed in preprocessing. Therefore this analysis includes more points with low accuracy due to their coordinates being falsely located outside of a building. This increases the number of points, which cannot be correctly predicted as shopping. These points are visible in the following image as symbols close to, or within buildings. It also shows how the CAMA analysis is incapable of detecting recreational activity in an urban environment.<br>
 </p>
 <div class="cell">
 <details class="code-fold">
-<summary>Map to show true attribute versus classification</summary>
+<summary>Map true attribute versus classification</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>winti <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="st">"Winti.csv"</span>)</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>traj6 <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(winti, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"lon"</span>, <span class="st">"lat"</span>), <span class="at">crs =</span> <span class="dv">4326</span>, <span class="at">remove =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>traj6 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(traj6, <span class="at">crs =</span> <span class="dv">2056</span>)</span>
@@ -1837,7 +1837,7 @@ Based on walking data tracked with the Strava App, we want to answer the followi
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="index_files/figure-html/map%20classification%20vs%20true-1.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>Classification (colors) versus true attribute (shape) for one actvity.</figcaption>
+<figcaption>Visualisation of a visit of a garden in Wintherthur and a shopping trip. The color corresponds to the predicted activity whereas the shape corresponds to the actual activity.</figcaption>
 </figure>
 </div>
 </div>
@@ -1870,7 +1870,7 @@ Saskia Gianola and Sarah Wirth</p>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>wordcountaddin<span class="sc">::</span><span class="fu">word_count</span>(<span class="st">"index.qmd"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2216</code></pre>
+<pre><code>[1] 2248</code></pre>
 </div>
 </div>
 
